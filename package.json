@@ -27,5 +27,9 @@
   },
   "dependencies": {
     "express": "^5.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/armanmartirosyan/travel_share_backend.git"
   }
 }
