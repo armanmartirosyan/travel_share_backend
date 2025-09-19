@@ -1,1 +1,2 @@
-npm run fromat:check
+npm run format
+npm run lint
