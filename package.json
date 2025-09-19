@@ -39,5 +39,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/armanmartirosyan/travel_share_backend.git"
+  },
+  "overrides": {
+    "glob": "10.4.5"
   }
 }
