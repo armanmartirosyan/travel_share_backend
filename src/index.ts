@@ -1,7 +1,7 @@
 import express from "express";
 import { Env } from "./config/env.config.js";
 import type { ValidatedEnv } from "./types/index.js";
-import type { Express, Request, Response } from "express";
+import type { Express } from "express";
 
 const env: ValidatedEnv = Env.getInstance().env;
 
