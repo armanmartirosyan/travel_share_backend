@@ -35,7 +35,7 @@ export default defineConfig([
         "error",
         {
           selector: "default",
-          format: ["camelCase", "snake_case"],
+          format: ["camelCase", "snake_case", "UPPER_CASE"],
         },
         {
           selector: "typeLike",
@@ -63,8 +63,17 @@ export default defineConfig([
       "import/order": [
         "error",
         {
-          groups: [["builtin", "external"], "internal", ["parent", "sibling", "index"]],
-          "newlines-between": "always",
+          groups: [
+            ["builtin"], // Node.js built-ins
+            ["external"], // npm packages
+            ["internal"], // alias paths (e.g. @/utils)
+            ["parent", "sibling", "index"], // relative imports
+            ["type"], // type-only imports
+          ],
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
         },
       ],
       "import/no-unresolved": "off",
