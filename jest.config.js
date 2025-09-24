@@ -15,12 +15,10 @@ export default {
     },
   },
   modulePaths: ["<rootDir>/src"],
-  collectCoverage: true,
-  collectCoverageFrom: ["<rootDir>/src/**/*.ts"],
-  coveragePathIgnorePatterns: [
-    "<rootDir>/src/index.ts",
-    "<rootDir>/src/common/.*.ts",
-    "<rootDir>/src/config/.*.ts",
+  collectCoverage: false,
+  collectCoverageFrom: [
+    "<rootDir>/src/controllers/*.ts",
+    "<rootDir>/src/services/*.ts",
   ],
   coverageDirectory: "./tests/coverage_reports",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],

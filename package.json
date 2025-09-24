@@ -20,6 +20,8 @@
     "@eslint/js": "^9.35.0",
     "@swc/core": "^1.13.5",
     "@swc/jest": "^0.2.39",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.5.2",
@@ -37,8 +39,11 @@
     "typescript-eslint": "^8.44.0"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.18.2"
   },
   "repository": {
     "type": "git",

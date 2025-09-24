@@ -10,7 +10,7 @@ class Env {
   private readonly _logger: Logger;
   private readonly _env: ValidatedEnv;
 
-  public static getInstance(): Env {
+  public static get getInstance(): Env {
     if (!Env._instance) Env._instance = new Env();
     return Env._instance;
   }
@@ -25,14 +25,13 @@ class Env {
       path: `${path.resolve(import.meta.dirname, "../../.env")}`,
       quiet: true,
     });
-    this._logger.debug(path.resolve(import.meta.dirname, "../../.env"));
     this._env = this.validateEnv();
   }
 
   private validateEnv(): ValidatedEnv {
     const requiredEnv: EnvList = {
       number: ["PORT"],
-      string: ["LOG_LEVEL"],
+      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_CONNECTION_STRING"],
     };
     const env: ValidatedEnv = {} as ValidatedEnv;
     const missingVars: string[] = [];
