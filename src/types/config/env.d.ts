@@ -8,4 +8,5 @@ export type ValidatedEnv = {
   LOG_LEVEL: string;
   NODE_ENV: string;
   CLIENT_URL: string;
+  MONGO_CONNECTION_STRING: string;
 };

@@ -10,7 +10,7 @@ class Env {
   private readonly _logger: Logger;
   private readonly _env: ValidatedEnv;
 
-  public static get getInstance(): Env {
+  public static get instance(): Env {
     if (!Env._instance) Env._instance = new Env();
     return Env._instance;
   }

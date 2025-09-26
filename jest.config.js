@@ -16,10 +16,7 @@ export default {
   },
   modulePaths: ["<rootDir>/src"],
   collectCoverage: false,
-  collectCoverageFrom: [
-    "<rootDir>/src/controllers/*.ts",
-    "<rootDir>/src/services/*.ts",
-  ],
+  collectCoverageFrom: ["<rootDir>/src/controllers/*.ts", "<rootDir>/src/services/*.ts"],
   coverageDirectory: "./tests/coverage_reports",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],
   transform: {
