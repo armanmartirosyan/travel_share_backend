@@ -37,10 +37,8 @@ class Database {
       } catch (error: unknown) {
         if (error instanceof mongoose.Error)
           this._logger.error("Mongoose error::" + error.name + "::" + error.message);
-        else if (error instanceof Error)
-          this._logger.error("Unknown error::" + error.message);
-        else
-          this._logger.error("Unexpected error during DB connection::", error);
+        else if (error instanceof Error) this._logger.error("Unknown error::" + error.message);
+        else this._logger.error("Unexpected error during DB connection::", error);
 
         if (attempt < this._maxRetries) {
           this._logger.warn(`Retrying in ${this._retryDelay / 1000} seconds...`);
@@ -68,7 +66,6 @@ class Database {
       this._logger.error("MongoDB error: " + err.message);
     });
   }
-
 }
 
 export { Database };
