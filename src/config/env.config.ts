@@ -31,7 +31,7 @@ class Env {
   private validateEnv(): ValidatedEnv {
     const requiredEnv: EnvList = {
       number: ["PORT"],
-      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_CONNECTION_STRING"],
+      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_CONNECTION_STRING", "LOG_PATH"],
     };
     const env: ValidatedEnv = {} as ValidatedEnv;
     const missingVars: string[] = [];
@@ -55,7 +55,7 @@ class Env {
       process.exit(1);
     }
     this._logger.info(".env file loaded successfully");
-
+    env.ISDEV = process.env.NODE_ENV !== "production";
     return env;
   }
 }

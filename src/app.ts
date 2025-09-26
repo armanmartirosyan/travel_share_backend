@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
@@ -5,7 +7,8 @@ import { Logger } from "./common/logger.js";
 import { Database } from "./config/database.config.js";
 import { Env } from "./config/env.config.js";
 import { mainRouter } from "./routes/index.js";
-import type { Express } from "express";
+import type { ValidatedEnv } from "./types/index.js";
+import type { RequestHandler, Express, Request, Response, NextFunction } from "express";
 
 class App {
   private readonly _app: Express;
@@ -13,18 +16,32 @@ class App {
   private readonly HOST: string;
   private readonly MODE: string;
 
-  private readonly _env: Env;
+  private readonly _env: ValidatedEnv;
   private readonly _logger: Logger;
   private readonly _database: Database;
 
   constructor() {
     this._logger = new Logger("App.Main");
-    this._env = Env.instance;
-    this.HTTP_PORT = this._env.env.PORT;
-    this.MODE = this._env.env.NODE_ENV;
+    this._env = Env.instance.env;
+    this.HTTP_PORT = this._env.PORT;
+    this.MODE = this._env.NODE_ENV;
     this.HOST = "0.0.0.0";
     this._app = express();
     this._database = Database.instance;
+  }
+
+  async startup(): Promise<void> {
+    this.configureRoutes();
+    await this._database.connect();
+    await this.serverListen();
+  }
+
+  private async serverListen(): Promise<void> {
+    this._app.listen(this.HTTP_PORT, this.HOST, (): void => {
+      this._logger.info(
+        `App is listening on the port ${this.HTTP_PORT} on host ${this.HOST} on ${this.MODE} mode`,
+      );
+    });
   }
 
   private configureRoutes(): void {
@@ -33,21 +50,39 @@ class App {
     this._app.use(
       cors({
         credentials: true,
-        origin: process.env.CLIENT_URL,
+        origin: this._env.CLIENT_URL,
       }),
     );
+    this._app.use(this.configureDumper());
     this._app.use("/api", mainRouter);
   }
 
-  async startup(): Promise<void> {
-    this.configureRoutes();
+  private configureDumper(): RequestHandler {
+    const filename: string = path.join(this._env.LOG_PATH, new Date().toISOString().split("T")[0]);
 
-    await this._database.connect();
-    this._app.listen(this.HTTP_PORT, this.HOST, (): void => {
-      this._logger.info(
-        `App is listening on the port ${this.HTTP_PORT} on host ${this.HOST} on ${this.MODE} mode`,
-      );
-    });
+    function handler(req: Request, res: Response, next: NextFunction): void {
+      res.on("finish", (): void => {
+        if (res.statusCode < 400) return;
+        const dump = {
+          url: req.originalUrl,
+          ip: req.ip,
+          timestamp: new Date().toISOString(),
+          method: req.method,
+          statusCode: res.statusCode,
+          headers: req.headers,
+          body: req.body,
+          query: req.query,
+          params: req.params,
+        };
+
+        fs.appendFile(filename + ".log", JSON.stringify(dump) + "\r\n", (err) => {
+          if (err) console.error("Failed to write request log:", err);
+        });
+      });
+
+      next();
+    }
+    return handler;
   }
 }
 

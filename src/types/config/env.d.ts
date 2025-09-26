@@ -9,4 +9,6 @@ export type ValidatedEnv = {
   NODE_ENV: string;
   CLIENT_URL: string;
   MONGO_CONNECTION_STRING: string;
+  LOG_PATH: string;
+  ISDEV: boolean;
 };
