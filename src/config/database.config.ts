@@ -3,8 +3,8 @@ import { Env } from "./env.config.js";
 import { Logger } from "../common/logger.js";
 import type { Connection } from "mongoose";
 
-class Database {
-  private static _instance: Database;
+class DatabaseService {
+  private static _instance: DatabaseService;
 
   private readonly _connectionUri: string;
   private readonly _logger: Logger;
@@ -14,13 +14,13 @@ class Database {
   private constructor() {
     this._maxRetries = 3;
     this._retryDelay = 2000;
-    this._connectionUri = Env.instance.env.MONGO_CONNECTION_STRING;
-    this._logger = new Logger("Database");
+    this._connectionUri = Env.instance.env.MONGO_URL;
+    this._logger = new Logger("DatabaseService");
   }
 
-  public static get instance(): Database {
-    if (!Database._instance) Database._instance = new Database();
-    return Database._instance;
+  public static get instance(): DatabaseService {
+    if (!DatabaseService._instance) DatabaseService._instance = new DatabaseService();
+    return DatabaseService._instance;
   }
 
   public async connect(): Promise<void> {
@@ -68,4 +68,4 @@ class Database {
   }
 }
 
-export { Database };
+export { DatabaseService };

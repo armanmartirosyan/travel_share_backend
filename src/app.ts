@@ -4,8 +4,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import { Logger } from "./common/logger.js";
-import { Database } from "./config/database.config.js";
+import { DatabaseService } from "./config/database.config.js";
 import { Env } from "./config/env.config.js";
+import { RedisService } from "./config/redis.config.js";
 import { mainRouter } from "./routes/index.js";
 import type { ValidatedEnv } from "./types/index.js";
 import type { RequestHandler, Express, Request, Response, NextFunction } from "express";
@@ -18,7 +19,8 @@ class App {
 
   private readonly _env: ValidatedEnv;
   private readonly _logger: Logger;
-  private readonly _database: Database;
+  private readonly _database: DatabaseService;
+  private readonly _redis: RedisService;
 
   constructor() {
     this._logger = new Logger("App.Main");
@@ -27,7 +29,8 @@ class App {
     this.MODE = this._env.NODE_ENV;
     this.HOST = "0.0.0.0";
     this._app = express();
-    this._database = Database.instance;
+    this._database = DatabaseService.instance;
+    this._redis = RedisService.instance;
   }
 
   async startup(): Promise<void> {

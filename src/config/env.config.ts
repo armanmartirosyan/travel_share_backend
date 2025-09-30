@@ -31,7 +31,7 @@ class Env {
   private validateEnv(): ValidatedEnv {
     const requiredEnv: EnvList = {
       number: ["PORT"],
-      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_CONNECTION_STRING", "LOG_PATH"],
+      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_URL", "LOG_PATH", "REDIS_URL"],
     };
     const env: ValidatedEnv = {} as ValidatedEnv;
     const missingVars: string[] = [];
