@@ -36,6 +36,7 @@ export default defineConfig([
         {
           selector: "default",
           format: ["camelCase", "snake_case", "UPPER_CASE", "PascalCase"],
+          leadingUnderscore: "allow",
         },
         {
           selector: "typeLike",
@@ -57,7 +58,7 @@ export default defineConfig([
         },
         {
           selector: "classMethod",
-          format: ["camelCase"],
+          format: ["camelCase", "PascalCase"],
           leadingUnderscore: "allow",
         },
       ],

@@ -7,6 +7,7 @@ import { Logger } from "./common/logger.js";
 import { DatabaseService } from "./config/database.config.js";
 import { Env } from "./config/env.config.js";
 import { RedisService } from "./config/redis.config.js";
+import { ErrorMiddleware } from "./middlewares/error.middleware.js";
 import { mainRouter } from "./routes/index.js";
 import type { ValidatedEnv } from "./types/index.js";
 import type { RequestHandler, Express, Request, Response, NextFunction } from "express";
@@ -58,6 +59,7 @@ class App {
     );
     this._app.use(this.configureDumper());
     this._app.use("/api", mainRouter);
+    this._app.use(ErrorMiddleware.ErrorHandler());
   }
 
   private configureDumper(): RequestHandler {
@@ -65,7 +67,7 @@ class App {
 
     function handler(req: Request, res: Response, next: NextFunction): void {
       res.on("finish", (): void => {
-        if (res.statusCode < 400) return;
+        if (res.statusCode < 500) return;
         const dump = {
           url: req.originalUrl,
           ip: req.ip,

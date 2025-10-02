@@ -1,6 +1,16 @@
+import type { AuthResponse } from "../types/index.js";
+
 class AuthService {
-  getUser(): number {
-    return 1;
+  public async userRegistration(
+    _email: string,
+    _username: string,
+    _password: string,
+    _passwordConfirm: string,
+  ): Promise<AuthResponse> {
+    return {
+      accessToken: "xxx",
+      refreshToken: "xxx",
+    };
   }
 }
 
