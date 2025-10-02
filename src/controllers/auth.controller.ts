@@ -19,7 +19,7 @@ class AuthController {
         password,
         passwordConfirm,
       );
-      res.status(200).json(ResponseGenerator.success("OK", result));
+      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", result));
       return;
     } catch (error: unknown) {
       next(error);
