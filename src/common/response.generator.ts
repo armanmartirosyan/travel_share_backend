@@ -7,6 +7,7 @@ class ResponseGenerator {
     U401: "User is not authorized.",
     B400: "Bad Request",
     M400: "Missing values",
+    V400: "Validation error",
     N404: "Not Found",
     F403: "Forbidden",
   };

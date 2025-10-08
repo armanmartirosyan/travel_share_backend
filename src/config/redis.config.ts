@@ -16,7 +16,7 @@ class RedisService {
     this._client = new Redis(this._connectionUri, {
       retryStrategy: (times: number): number | null => {
         if (times > 3) return null;
-        return times * 1000;
+        return times * 2000;
       },
     });
 

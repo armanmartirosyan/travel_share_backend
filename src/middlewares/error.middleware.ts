@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
 import { APIError } from "../errors/api.error.js";
@@ -9,8 +10,14 @@ class ErrorMiddleware {
   public static ErrorHandler(): ErrorRequestHandler {
     function handler(error: unknown, _req: Request, res: Response, _next: NextFunction): void {
       if (error instanceof APIError) {
-        ErrorMiddleware._logger.warn(error);
-        res.status(error.status).json(ResponseGenerator.error(error.code, error.errors));
+        ErrorMiddleware._logger.debug(error);
+        res
+          .status(error.status)
+          .json(ResponseGenerator.error(error.code, { reason: error.errors }));
+        return;
+      }
+      if (error instanceof mongoose.Error.ValidationError) {
+        res.status(400).json(ResponseGenerator.error("V400", { reason: error.errors }));
         return;
       }
       res.status(500).json(ResponseGenerator.error("INTERNAL_SERVER_ERROR"));

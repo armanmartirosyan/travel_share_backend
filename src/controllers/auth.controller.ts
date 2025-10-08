@@ -1,29 +1,60 @@
+import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
+import { Env } from "../config/env.config.js";
+import { UserDTO } from "../dto/user.dto.js";
+import { FakeData } from "../helpers/fake.responses.js";
 import { AuthService } from "../services/auth.service.js";
-import type { AuthResponse } from "../types/api/auth.js";
+import type {
+  ApiResponse,
+  AuthResponse,
+  AuthServiceResponse,
+  RequestBody,
+} from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
 
 class AuthController {
   private readonly _authService: AuthService;
+  private readonly _isDev: boolean;
+  private readonly _logger: Logger;
 
   constructor() {
+    this._isDev = Env.instance.env.ISDEV;
     this._authService = new AuthService();
+    this._logger = new Logger("UserController");
   }
 
-  async userRegistration(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async userRegistration(
+    req: Request<{}, {}, RequestBody.Registration>,
+    res: Response<ApiResponse<AuthResponse>>,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      const { email, username, password, passwordConfirm } = req.body;
-      const result: AuthResponse = await this._authService.userRegistration(
-        email,
-        username,
-        password,
-        passwordConfirm,
-      );
-      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", result));
+      if (this._isDev) {
+        res
+          .status(200)
+          .json(ResponseGenerator.success<AuthResponse>("OK", FakeData.getAuthRegistration()));
+        return;
+      }
+      const result: AuthServiceResponse = await this._authService.userRegistration(req.body);
+      this.setRefreshCookie(res, result.refreshToken);
+      const response: AuthResponse = {
+        user: new UserDTO(result.user),
+        accessToken: result.accessToken,
+      };
+      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
       return;
     } catch (error: unknown) {
       next(error);
     }
+  }
+
+  private setRefreshCookie(res: Response, refreshToken: string): void {
+    res.cookie("refreshToken", refreshToken, {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "strict",
+      secure: !this._isDev,
+    });
   }
 }
 

@@ -1,16 +1,17 @@
 import mongoose, { Schema } from "mongoose";
-import type { Model, Document, ValidatorProps } from "mongoose";
+import type { Model, Document, ValidatorProps, Types } from "mongoose";
 
 export interface IUser extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   username: string;
   email: string;
+  name?: string;
+  surname?: string;
   password: string;
   isActive: boolean;
-  activationToken: string;
   profilePicture?: string;
-  followers: Schema.Types.ObjectId[];
-  following: Schema.Types.ObjectId[];
+  followers: Types.ObjectId[];
+  following: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +36,14 @@ const userSchema = new Schema<IUser>(
         message: (props: ValidatorProps): string => `${props.value} is not a valid email.`,
       },
     },
+    name: {
+      type: String,
+      trim: true,
+    },
+    surname: {
+      type: String,
+      trim: true,
+    },
     password: {
       type: String,
       required: true,
@@ -43,9 +52,6 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: Boolean,
       default: false,
-    },
-    activationToken: {
-      type: String,
     },
     profilePicture: {
       type: String,

@@ -4,6 +4,7 @@ export type ResponseMapType = {
   U401: string;
   B400: string;
   M400: string;
+  V400: string;
   N404: string;
   F403: string;
 };
