@@ -2,7 +2,6 @@ import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
-import { FakeData } from "../helpers/fake.responses.js";
 import { AuthService } from "../services/auth.service.js";
 import type {
   ApiResponse,
@@ -29,12 +28,6 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      if (this._isDev) {
-        res
-          .status(200)
-          .json(ResponseGenerator.success<AuthResponse>("OK", FakeData.getAuthRegistration()));
-        return;
-      }
       const result: AuthServiceResponse = await this._authService.userRegistration(req.body);
       this.setRefreshCookie(res, result.refreshToken);
       const response: AuthResponse = {
@@ -50,7 +43,7 @@ class AuthController {
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "strict",
       secure: !this._isDev,
