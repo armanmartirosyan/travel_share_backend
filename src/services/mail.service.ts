@@ -40,8 +40,7 @@ class MailService {
   }
 
   private async sendMail(mailOptions: SendMailOptions): Promise<void> {
-    if (!this._env.MAIL_SERVICE)
-      return;
+    if (!this._env.MAIL_SERVICE) return;
     try {
       await this._transporter.sendMail(mailOptions);
     } catch (error: unknown) {
