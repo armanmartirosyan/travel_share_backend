@@ -29,10 +29,10 @@ class AuthController {
   ): Promise<void> {
     try {
       const result: AuthServiceResponse = await this._authService.userRegistration(req.body);
-      this.setRefreshCookie(res, result.refreshToken);
+      this.setRefreshCookie(res, result.tokenPair.refreshToken);
       const response: AuthResponse = {
         user: new UserDTO(result.user),
-        accessToken: result.accessToken,
+        accessToken: result.tokenPair.accessToken,
       };
       res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
       return;

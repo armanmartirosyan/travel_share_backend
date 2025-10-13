@@ -30,8 +30,22 @@ class Env {
 
   private validateEnv(): ValidatedEnv {
     const requiredEnv: EnvList = {
-      number: ["PORT"],
-      string: ["LOG_LEVEL", "NODE_ENV", "CLIENT_URL", "MONGO_URL", "LOG_PATH", "REDIS_URL"],
+      number: ["PORT", "SMTP_PORT"],
+      string: [
+        "LOG_LEVEL",
+        "NODE_ENV",
+        "CLIENT_URL",
+        "MONGO_URL",
+        "LOG_PATH",
+        "REDIS_URL",
+        "ACCESS_TOKEN_SECRET",
+        "REFRESH_TOKEN_SECRET",
+        "SMTP_HOST",
+        "SMTP_USERNAME",
+        "SMTP_PASSWORD",
+        "API_URL",
+        "MAIL_SERVICE_STATUS",
+      ],
     };
     const env: ValidatedEnv = {} as ValidatedEnv;
     const missingVars: string[] = [];
@@ -56,6 +70,7 @@ class Env {
     }
     this._logger.info(".env file loaded successfully");
     env.ISDEV = process.env.NODE_ENV !== "production";
+    env.MAIL_SERVICE = process.env.MAIL_SERVICE_STATUS === "enable";
     return env;
   }
 }

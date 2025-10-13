@@ -1,3 +1,4 @@
+import type { TokenPair } from "./token.js";
 import type { UserDTO } from "../../dto/user.dto.js";
 import type { IUser } from "../../models/user.model.js";
 
@@ -19,6 +20,5 @@ export type AuthResponse = {
 
 export type AuthServiceResponse = {
   user: IUser;
-  accessToken: string;
-  refreshToken: string;
+  tokenPair: TokenPair;
 };
