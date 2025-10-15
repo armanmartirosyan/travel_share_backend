@@ -24,7 +24,7 @@ class MailService {
     });
   }
 
-  async sendActivationMail(to: string, link: string): Promise<void> {
+  public async sendActivationMail(to: string, link: string): Promise<void> {
     return await this.sendMail({
       from: this._env.SMTP_USERNAME,
       to,
