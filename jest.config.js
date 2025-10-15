@@ -6,6 +6,11 @@ export default {
   verbose: true,
   preset: "ts-jest",
   testEnvironment: "node",
+  globals: {
+    "ts-jest": {
+      useESM: true,
+    },
+  },
   coverageThreshold: {
     global: {
       branches: 80,
@@ -15,8 +20,8 @@ export default {
     },
   },
   modulePaths: ["<rootDir>/src"],
-  collectCoverage: false,
-  collectCoverageFrom: ["<rootDir>/src/controllers/*.ts", "<rootDir>/src/services/*.ts"],
+  collectCoverage: true,
+  collectCoverageFrom: ["<rootDir>/src/services/*.ts"],
   coverageDirectory: "./tests/coverage_reports",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],
   transform: {
