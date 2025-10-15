@@ -29,6 +29,7 @@ class TokenService {
       refreshToken,
     };
   }
+
   public async saveToken(userID: Types.ObjectId, refreshToken: string): Promise<void> {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
