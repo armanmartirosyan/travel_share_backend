@@ -11,6 +11,10 @@ export namespace RequestBody {
     password: string;
     passwordConfirm: string;
   };
+
+  type Login =
+    | { email: string; password: string; username?: never }
+    | { username: string; password: string; email?: never };
 }
 
 export type AuthResponse = {

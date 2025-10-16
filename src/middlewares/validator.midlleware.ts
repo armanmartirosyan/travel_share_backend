@@ -2,10 +2,11 @@ import { APIError } from "../errors/api.error.js";
 import type { RequestHandler, Request, Response, NextFunction } from "express";
 
 class Validator {
-  public static commonBodyValidations(fields: string[]): RequestHandler {
-    function handler(req: Request, res: Response, next: NextFunction): void {
+  public static commonBodyFields(fields: string[]): RequestHandler {
+    function handler(req: Request, _res: Response, next: NextFunction): void {
       const missingFields: string[] = [];
 
+      Validator.checkBodyExisting(req);
       for (const field of fields) {
         if (req.body[field] === undefined || req.body[field] === null) missingFields.push(field);
       }
@@ -14,6 +15,26 @@ class Validator {
       next();
     }
     return handler;
+  }
+
+  public static optionalBodyFields(fields: string[]): RequestHandler {
+    function handler(req: Request, _res: Response, next: NextFunction): void {
+      let existCount: number = 0;
+
+      Validator.checkBodyExisting(req);
+      for (const field of fields) {
+        if (req.body[field] !== undefined && req.body[field] !== null) existCount++;
+      }
+
+      if (existCount > 1) throw APIError.BadRequest("TM400", fields);
+      next();
+    }
+    return handler;
+  }
+
+  private static checkBodyExisting(req: Request): void {
+    if (req.body === undefined || req.body === null)
+      throw APIError.BadRequest("B400", "No request body provided");
   }
 }
 

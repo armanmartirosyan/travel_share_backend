@@ -41,6 +41,25 @@ class AuthController {
     }
   }
 
+  async userLogin(
+    req: Request<{}, {}, RequestBody.Login>,
+    res: Response<ApiResponse<AuthResponse>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const result: AuthServiceResponse = await this._authService.userLogin(req.body, req.ip);
+      this.setRefreshCookie(res, result.tokenPair.refreshToken);
+      const response: AuthResponse = {
+        user: new UserDTO(result.user),
+        accessToken: result.tokenPair.accessToken,
+      };
+      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
+      return;
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,

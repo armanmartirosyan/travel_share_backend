@@ -46,6 +46,24 @@ class RedisService {
     return this._client.del(key);
   }
 
+  public async incr(key: RedisKey): Promise<number> {
+    return this._client.incr(key);
+  }
+
+  public async incrEx(key: RedisKey, seconds: number): Promise<number> {
+    const current: number = await this._client.incr(key);
+    if (current === 1) await this._client.expire(key, seconds);
+    return current;
+  }
+
+  public async decr(key: RedisKey): Promise<number> {
+    return this._client.decr(key);
+  }
+
+  public async expire(key: RedisKey, seconds: number | string): Promise<number> {
+    return this._client.expire(key, seconds);
+  }
+
   public disconnect(): void {
     this._client.disconnect();
   }

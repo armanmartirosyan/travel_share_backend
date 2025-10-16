@@ -8,8 +8,10 @@ class ResponseGenerator {
     B400: "Bad Request",
     M400: "Missing values",
     V400: "Validation error",
+    TM400: "Too many arguments",
     N404: "Not Found",
     F403: "Forbidden",
+    B429: "Too many requests",
   };
 
   static success<T>(code: keyof ResponseMapType, data: T): ApiResponse<T> {

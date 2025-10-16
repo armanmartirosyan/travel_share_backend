@@ -7,8 +7,15 @@ const authController = new AuthController();
 
 authRouter.post(
   "/registration",
-  Validator.commonBodyValidations(["email", "username", "password", "passwordConfirm"]),
+  Validator.commonBodyFields(["email", "username", "password", "passwordConfirm"]),
   authController.userRegistration.bind(authController),
+);
+
+authRouter.post(
+  "/login",
+  Validator.commonBodyFields(["password"]),
+  Validator.optionalBodyFields(["email", "username"]),
+  authController.userLogin.bind(authController),
 );
 
 export { authRouter };

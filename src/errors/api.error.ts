@@ -30,6 +30,10 @@ class APIError extends Error {
   static Forbidden(code: keyof ResponseMapType, errors: any = []): APIError {
     return new APIError(403, code, "Forbidden", errors);
   }
+
+  static TooManyRequests(code: keyof ResponseMapType, errors: any = []): APIError {
+    return new APIError(429, code, "Too Many Requests", errors);
+  }
 }
 
 export { APIError };

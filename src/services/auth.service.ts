@@ -1,22 +1,29 @@
+import { setTimeout } from "node:timers/promises";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import { MailService } from "./mail.service.js";
 import { TokenService } from "./token.service.js";
 import { Env } from "../config/env.config.js";
+import { RedisService } from "../config/redis.config.js";
 import { APIError } from "../errors/api.error.js";
 import { User, ActivationToken } from "../models/index.model.js";
 import type { IUser, IActivationToken } from "../models/index.model.js";
 import type { AuthServiceResponse, RequestBody, TokenPair, ValidatedEnv } from "../types/index.js";
 
 class AuthService {
+  private readonly MAX_LOGIN_ATTEMPTS: number = 5;
+  private readonly BLOCK_TIME: number = 10 * 60;
+
   private readonly _tokenService: TokenService;
   private readonly _mailService: MailService;
+  private readonly _redis: RedisService;
   private readonly _env: ValidatedEnv;
 
   constructor() {
     this._env = Env.instance.env;
     this._tokenService = new TokenService();
     this._mailService = new MailService();
+    this._redis = RedisService.instance;
   }
 
   public async userRegistration(body: RequestBody.Registration): Promise<AuthServiceResponse> {
@@ -52,6 +59,55 @@ class AuthService {
       email,
       `${this._env.API_URL}/api/user/activate/${activationToken.activationToken}`,
     );
+    return {
+      user,
+      tokenPair,
+    };
+  }
+
+  public async userLogin(
+    body: RequestBody.Login,
+    ip: string | undefined,
+  ): Promise<AuthServiceResponse> {
+    const identifier: string = body.email ?? body.username;
+    const redisKey: string = `login:attempts:${identifier}:${ip}`;
+
+    const attemptsStr: string | null = await this._redis.get(redisKey);
+    const attempts: number = attemptsStr ? Number(attemptsStr) : 0;
+
+    if (attempts >= this.MAX_LOGIN_ATTEMPTS) {
+      await setTimeout(attempts * 1000);
+      throw APIError.TooManyRequests("B429", "Too many failed login attempts. Try again later.");
+    }
+
+    let user: IUser | null = null;
+    if (body.email !== undefined && body.email !== null)
+      user = await User.findOne({ email: body.email });
+    else user = await User.findOne({ username: body.username });
+
+    if (!user) {
+      await this._redis.incrEx(redisKey, this.BLOCK_TIME);
+      throw APIError.BadRequest("B400", "Invalid credentials");
+    }
+
+    const passwordMatch: boolean = await bcrypt.compare(body.password, user.password);
+
+    if (!passwordMatch) {
+      await this._redis.incrEx(redisKey, this.BLOCK_TIME);
+      throw APIError.BadRequest("B400", "Invalid credentials");
+    }
+
+    const tokenPair: TokenPair = this._tokenService.generateTokens({
+      iss: "travel_share_backend",
+      aud: "client",
+      iat: Date.now() / 1000,
+      sub: user._id.toString(),
+    });
+
+    await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
+    await user.save();
+    await this._redis.del(redisKey);
+
     return {
       user,
       tokenPair,
