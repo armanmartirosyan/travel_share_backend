@@ -7,14 +7,16 @@ import { TestSetuper } from "../tests.setuper";
 jest.mock("../../../src/common/logger");
 jest.mock("nodemailer");
 
+const testSetuper = new TestSetuper();
+
 describe("MailService", (): void => {
   const sendMailMock: jest.Mock = jest.fn();
   const baseTo: string = "to@example.com";
   const baseLink: string = "http://link";
 
   beforeEach(() => {
-    TestSetuper.clearMocks();
-    TestSetuper.setupEnv();
+    testSetuper.clearMocks();
+    testSetuper.setupEnv();
 
     // mock transporter
     nodeMailer.createTransport = jest.fn().mockReturnValue({ sendMail: sendMailMock });
@@ -23,7 +25,7 @@ describe("MailService", (): void => {
   it("should not attempt to send if MAIL_SERVICE is false", async (): Promise<void> => {
     jest
       .spyOn(Env.instance, "env", "get")
-      .mockReturnValue({ ...TestSetuper.mockEnv(), MAIL_SERVICE: false });
+      .mockReturnValue({ ...testSetuper.mockEnv(), MAIL_SERVICE: false });
 
     const mail = new MailService();
 

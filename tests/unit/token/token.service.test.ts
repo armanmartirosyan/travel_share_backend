@@ -8,12 +8,14 @@ import type { Types } from "mongoose";
 
 jest.mock("../../../src/common/logger");
 
+const testSetuper = new TestSetuper();
+
 describe("TokenService", (): void => {
   beforeEach((): void => {
-    TestSetuper.clearMocks();
-    TestSetuper.setupEnv();
-    TestSetuper.setupJwt();
-    TestSetuper.setupTokenModel();
+    testSetuper.clearMocks();
+    testSetuper.setupEnv();
+    testSetuper.setupJwt();
+    testSetuper.setupTokenModel();
   });
 
   describe("generateTokens", (): void => {

@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import nodeMailer from "nodemailer";
 import { Env } from "../../src/config/env.config";
+import { RedisService } from "../../src/config/redis.config";
 import { ActivationToken } from "../../src/models/activation.model";
 import { Tokens } from "../../src/models/token.model";
 import { User } from "../../src/models/user.model";
@@ -10,20 +12,40 @@ import { TokenService } from "../../src/services/token.service";
 import type { ValidatedEnv } from "../../src/types";
 
 class TestSetuper {
-  public static clearMocks(): void {
+  public readonly redisService;
+
+  constructor() {
+    this.redisService = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue("OK"),
+      setEx: jest.fn().mockResolvedValue("OK"),
+      incr: jest.fn().mockResolvedValue(1),
+      incrEx: jest.fn().mockResolvedValue(1),
+      decr: jest.fn().mockResolvedValue(1),
+      del: jest.fn().mockResolvedValue(1),
+      expire: jest.fn().mockResolvedValue(1),
+      disconnect: jest.fn(),
+    };
+  }
+
+  public clearMocks(): void {
     jest.resetModules();
     jest.clearAllMocks();
   }
 
-  public static setupEnv(): void {
-    jest.spyOn(Env.instance, "env", "get").mockReturnValue(TestSetuper.mockEnv());
+  public setupEnv(): void {
+    jest.spyOn(Env.instance, "env", "get").mockReturnValue(this.mockEnv());
   }
 
-  public static setupBcrypt(): void {
+  public setupBcrypt(): void {
     bcrypt.hash = jest.fn().mockResolvedValue("hashed-password");
+    bcrypt.compare = jest.fn().mockImplementation((password: string): boolean => {
+      if (password === "wrongPassword") return false;
+      return true;
+    });
   }
 
-  public static setupJwt(): void {
+  public setupJwt(): void {
     jwt.sign = jest.fn().mockResolvedValue("Token");
     jwt.decode = jest.fn().mockResolvedValue({
       iss: "travel_share_backend",
@@ -33,38 +55,54 @@ class TestSetuper {
     });
   }
 
-  public static setupActivationTokenModel(): void {
+  public setupActivationTokenModel(): void {
     jest.spyOn(ActivationToken.prototype, "save").mockResolvedValue(undefined);
   }
 
-  public static setupNodeMailer(): void {
-    // nodeMailer.createTKkestAccount
+  public setupNodeMailer(): void {
+    const sendMailMock: jest.Mock = jest.fn();
+
+    nodeMailer.createTransport = jest.fn().mockReturnValue({ sendMail: sendMailMock });
   }
 
-  public static setupTokenService(): void {
+  public setupTokenService(): void {
     jest
       .spyOn(TokenService.prototype, "generateTokens")
       .mockReturnValue({ accessToken: "a", refreshToken: "r" });
     jest.spyOn(TokenService.prototype, "saveToken").mockResolvedValue(undefined);
   }
 
-  public static setupMailService(): void {
+  public setupRedisService(): void {
+    jest
+      .spyOn(RedisService, "instance", "get")
+      .mockReturnValue(this.redisService as unknown as RedisService);
+  }
+
+  public setupMailService(): void {
     jest.spyOn(MailService.prototype, "sendActivationMail").mockResolvedValue(undefined);
   }
 
-  public static setupUserModel(): void {
+  public setupUserModel(): void {
     // model saves
     jest.spyOn(User.prototype, "save").mockResolvedValue(undefined);
 
     // model find
     User.findOne = jest.fn().mockImplementation(({ email, username }) => {
-      if (email === "taken@example.com" || username === "takenusername")
-        return Promise.resolve({ _id: "u1", email });
+      if (email === "taken@example.com" || username === "takenusername") {
+        const mockUser = {
+          _id: new mongoose.Types.ObjectId(),
+          email,
+          username,
+          password: "hashedPassword",
+          save: jest.fn().mockResolvedValue(undefined),
+        };
+        return Promise.resolve(mockUser);
+      }
       return Promise.resolve(null);
     });
   }
 
-  public static setupTokenModel(): void {
+  public setupTokenModel(): void {
     // model saves
     jest.spyOn(Tokens.prototype, "save").mockResolvedValue(undefined);
 
@@ -82,7 +120,7 @@ class TestSetuper {
     });
   }
 
-  public static mockEnv(): ValidatedEnv {
+  public mockEnv(): ValidatedEnv {
     return {
       PORT: 8080,
       LOG_LEVEL: "debug",

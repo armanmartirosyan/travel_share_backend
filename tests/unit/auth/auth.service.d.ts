@@ -1,6 +1,7 @@
 export type ExceptionCases<T, I> = Array<{
   name: string;
   body: T;
+  setup: (() => void) | null;
   instance: I;
   errors: string;
 }>;
