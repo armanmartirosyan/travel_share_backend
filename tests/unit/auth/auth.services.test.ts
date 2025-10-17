@@ -118,4 +118,16 @@ describe("AuthService", (): void => {
       }
     });
   });
+
+  describe("userLogout", (): void => {
+    const refreshToken: string = "refreshToken";
+
+    it("user logout relete refresh token", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      await authService.userLogout(refreshToken);
+
+      expect(TokenService.prototype.removeToken).toHaveBeenCalledWith(refreshToken);
+    });
+  });
 });

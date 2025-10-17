@@ -22,7 +22,7 @@ class AuthController {
     this._logger = new Logger("UserController");
   }
 
-  async userRegistration(
+  public async userRegistration(
     req: Request<{}, {}, RequestBody.Registration>,
     res: Response<ApiResponse<AuthResponse>>,
     next: NextFunction,
@@ -41,7 +41,7 @@ class AuthController {
     }
   }
 
-  async userLogin(
+  public async userLogin(
     req: Request<{}, {}, RequestBody.Login>,
     res: Response<ApiResponse<AuthResponse>>,
     next: NextFunction,
@@ -54,6 +54,22 @@ class AuthController {
         accessToken: result.tokenPair.accessToken,
       };
       res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
+      return;
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  public async userLogout(
+    req: Request<{}, {}, {}>,
+    res: Response<ApiResponse<AuthResponse>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { refreshToken }: Record<string, string> = req.cookies;
+      await this._authService.userLogout(refreshToken);
+      res.clearCookie("refreshToken");
+      res.sendStatus(204);
       return;
     } catch (error: unknown) {
       next(error);

@@ -18,4 +18,6 @@ authRouter.post(
   authController.userLogin.bind(authController),
 );
 
+authRouter.post("/logout", authController.userLogout.bind(authController));
+
 export { authRouter };

@@ -40,6 +40,11 @@ class TokenService {
     );
     return;
   }
+
+  public async removeToken(token: string): Promise<void> {
+    await Tokens.findOneAndDelete({ refreshToken: token });
+    return;
+  }
 }
 
 export { TokenService };

@@ -70,6 +70,7 @@ class TestSetuper {
       .spyOn(TokenService.prototype, "generateTokens")
       .mockReturnValue({ accessToken: "a", refreshToken: "r" });
     jest.spyOn(TokenService.prototype, "saveToken").mockResolvedValue(undefined);
+    jest.spyOn(TokenService.prototype, "removeToken").mockResolvedValue(undefined);
   }
 
   public setupRedisService(): void {
@@ -112,8 +113,12 @@ class TestSetuper {
       refreshToken: "refreshToken",
       expiresAt: new Date(),
     });
-
     jest.spyOn(Tokens, "findOneAndUpdate").mockResolvedValue({
+      userID: new mongoose.Types.ObjectId(),
+      refreshToken: "refreshToken",
+      expiresAt: new Date(),
+    });
+    jest.spyOn(Tokens, "findOneAndDelete").mockResolvedValue({
       userID: new mongoose.Types.ObjectId(),
       refreshToken: "refreshToken",
       expiresAt: new Date(),

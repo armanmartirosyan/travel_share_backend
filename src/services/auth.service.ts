@@ -113,6 +113,11 @@ class AuthService {
       tokenPair,
     };
   }
+
+  public async userLogout(refreshToken: string): Promise<void> {
+    await this._tokenService.removeToken(refreshToken);
+    return;
+  }
 }
 
 export { AuthService };

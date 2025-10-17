@@ -49,4 +49,16 @@ describe("TokenService", (): void => {
       expect(Tokens.findOneAndUpdate).toHaveBeenCalled();
     });
   });
+
+  describe("removeToken", (): void => {
+    const refreshToken: string = "refreshToken";
+
+    it("should call findOneAndDelete", async (): Promise<void> => {
+      const tokenService = new TokenService();
+
+      await tokenService.removeToken(refreshToken);
+
+      expect(Tokens.findOneAndDelete).toHaveBeenCalledWith({ refreshToken });
+    });
+  });
 });
