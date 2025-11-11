@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import nodeMailer from "nodemailer";
 import { Env } from "../../src/config/env.config";
 import { RedisService } from "../../src/config/redis.config";
-import { ActivationToken} from "../../src/models/activation.model";
+import { ActivationToken } from "../../src/models/activation.model";
 import { Tokens } from "../../src/models/token.model";
 import { User } from "../../src/models/user.model";
 import { MailService } from "../../src/services/mail.service";

@@ -12,9 +12,7 @@ export namespace RequestBody {
     passwordConfirm: string;
   };
 
-  type Login =
-    | { email: string; password: string; username?: never }
-    | { username: string; password: string; email?: never };
+  type Login = { login: string; password: string };
 
   type Activate = { link: string };
 }

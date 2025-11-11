@@ -73,7 +73,7 @@ describe("AuthService", (): void => {
   describe("userLogin", (): void => {
     const baseIp: string = "127.0.0.1";
     const bodyBase: RequestBody.Login = {
-      email: "taken@example.com",
+      login: "taken@example.com",
       password: "password",
     };
 
@@ -95,7 +95,7 @@ describe("AuthService", (): void => {
 
       const res: AuthServiceResponse = await authService.userLogin(
         {
-          username: "takenusername",
+          login: "takenusername",
           password: "password",
         },
         baseIp,

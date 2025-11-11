@@ -15,7 +15,7 @@ const baseRegBody: RequestBody.Registration = {
 };
 
 const baseLoginBody: RequestBody.Login = {
-  email: "email@email.com",
+  login: "email@email.com",
   password: "password",
 };
 
@@ -46,7 +46,7 @@ const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof 
 const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIError> = [
   {
     name: "too many requests",
-    body: { ...baseLoginBody, email: "taken@example.com" },
+    body: baseLoginBody,
     setup: (): void => {
       testSetuper.redisService.get.mockResolvedValueOnce("5");
     },
@@ -55,14 +55,14 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   },
   {
     name: "no such user",
-    body: { ...baseLoginBody, email: "email@email.ru" },
+    body: baseLoginBody,
     setup: null,
     instance: APIError,
     errors: "Invalid credentials",
   },
   {
     name: "wrong password",
-    body: { password: "wrongPassword", email: "taken@example.com" },
+    body: { password: "wrongPassword", login: "taken@example.com" },
     setup: null,
     instance: APIError,
     errors: "Invalid credentials",

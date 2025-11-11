@@ -69,7 +69,7 @@ class AuthService {
     body: RequestBody.Login,
     ip: string | undefined,
   ): Promise<AuthServiceResponse> {
-    const identifier: string = body.email ?? body.username;
+    const identifier: string = body.login; // login field from request body
     const redisKey: string = `login:attempts:${identifier}:${ip}`;
 
     const attemptsStr: string | null = await this._redis.get(redisKey);
@@ -80,10 +80,11 @@ class AuthService {
       throw APIError.TooManyRequests("B429", "Too many failed login attempts. Try again later.");
     }
 
-    let user: IUser | null = null;
-    if (body.email !== undefined && body.email !== null)
-      user = await User.findOne({ email: body.email });
-    else user = await User.findOne({ username: body.username });
+    const isEmail: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+    const user: IUser | null = isEmail
+      ? await User.findOne({ email: identifier })
+      : await User.findOne({ username: identifier });
 
     if (!user) {
       await this._redis.incrEx(redisKey, this.BLOCK_TIME);
@@ -100,7 +101,7 @@ class AuthService {
     const tokenPair: TokenPair = this._tokenService.generateTokens({
       iss: "travel_share_backend",
       aud: "client",
-      iat: Date.now() / 1000,
+      iat: Math.floor(Date.now() / 1000),
       sub: user._id.toString(),
     });
 

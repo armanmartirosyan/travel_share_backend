@@ -18,7 +18,7 @@ authRouter.post(
   authController.userLogin.bind(authController),
 );
 authRouter.post("/logout", authController.userLogout.bind(authController));
-authRouter.post("/activate/:link", authController.userActivate.bind(authController));
+authRouter.get("/activate/:link", authController.userActivate.bind(authController));
 authRouter.post("/verify", AuthMiddleware.authHandler());
 
 export { authRouter };
