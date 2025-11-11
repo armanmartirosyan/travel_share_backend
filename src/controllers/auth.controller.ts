@@ -8,16 +8,17 @@ import type {
   AuthResponse,
   AuthServiceResponse,
   RequestBody,
+  ValidatedEnv,
 } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
 
 class AuthController {
   private readonly _authService: AuthService;
-  private readonly _isDev: boolean;
+  private readonly _env: ValidatedEnv;
   private readonly _logger: Logger;
 
   constructor() {
-    this._isDev = Env.instance.env.ISDEV;
+    this._env = Env.instance.env;
     this._authService = new AuthService();
     this._logger = new Logger("UserController");
   }
@@ -61,7 +62,7 @@ class AuthController {
   }
 
   public async userLogout(
-    req: Request<{}, {}, {}>,
+    req: Request,
     res: Response<ApiResponse<AuthResponse>>,
     next: NextFunction,
   ): Promise<void> {
@@ -76,12 +77,27 @@ class AuthController {
     }
   }
 
+  public async userActivate(
+    req: Request<RequestBody.Activate>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { link }: Record<string, string> = req.params;
+      await this._authService.userActivate(link);
+      res.redirect(this._env.CLIENT_URL);
+      return;
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "strict",
-      secure: !this._isDev,
+      secure: !this._env.ISDEV,
     });
   }
 }

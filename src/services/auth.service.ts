@@ -118,6 +118,19 @@ class AuthService {
     await this._tokenService.removeToken(refreshToken);
     return;
   }
+
+  public async userActivate(link: string): Promise<void> {
+    const userToken: IActivationToken | null = await ActivationToken.findOne({
+      activationToken: link,
+    });
+    if (!userToken) throw APIError.NoFound("N404", "Invalid activation link");
+
+    const user: IUser | null = await User.findById(userToken.userId);
+    if (!user) throw APIError.InternalServerError("Contact support for assistance");
+    user.isActive = true;
+    await user.save();
+    return;
+  }
 }
 
 export { AuthService };

@@ -15,6 +15,8 @@ export namespace RequestBody {
   type Login =
     | { email: string; password: string; username?: never }
     | { username: string; password: string; email?: never };
+
+  type Activate = { link: string };
 }
 
 export type AuthResponse = {

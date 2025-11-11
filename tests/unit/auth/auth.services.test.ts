@@ -3,7 +3,10 @@ import {
   testSetuper,
   AUTH_REG_EXCEPTION_CASES,
   AUTH_LOGIN_EXCEPTION_CASES,
+  AUTH_USER_ACTIVATE_EXCEPTION_CASES,
 } from "./auth.service.cases";
+import { APIError } from "../../../src/errors/api.error";
+import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
 import { TokenService } from "../../../src/services/token.service";
@@ -122,12 +125,45 @@ describe("AuthService", (): void => {
   describe("userLogout", (): void => {
     const refreshToken: string = "refreshToken";
 
-    it("user logout relete refresh token", async (): Promise<void> => {
+    it("user logout delete refresh token", async (): Promise<void> => {
       const authService = new AuthService();
 
       await authService.userLogout(refreshToken);
 
       expect(TokenService.prototype.removeToken).toHaveBeenCalledWith(refreshToken);
+    });
+  });
+
+  describe("userActivate", (): void => {
+    it("should activate user", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      await authService.userActivate("link");
+
+      expect(User.findById).toHaveBeenCalled();
+      expect(User.prototype.save).toHaveBeenCalled();
+    });
+
+    it("invalid link should throw NoFound", async (): Promise<void> => {
+      try {
+        const authService = new AuthService();
+
+        await authService.userActivate("invalid_link");
+        fail("should throw NoFound error");
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(APIError);
+      }
+    });
+
+    test.each(AUTH_USER_ACTIVATE_EXCEPTION_CASES)("$name", async ({ body, instance, errors }) => {
+      try {
+        const authService = new AuthService();
+        await authService.userActivate(body.link);
+        fail("Should throw an error");
+      } catch (e: any) {
+        expect(e).toBeInstanceOf(instance);
+        expect(e.errors).toBe(errors);
+      }
     });
   });
 });

@@ -56,7 +56,7 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   {
     name: "no such user",
     body: { ...baseLoginBody, email: "email@email.ru" },
-    setup: (): void => {},
+    setup: null,
     instance: APIError,
     errors: "Invalid credentials",
   },
@@ -69,4 +69,26 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   },
 ];
 
-export { testSetuper, AUTH_REG_EXCEPTION_CASES, AUTH_LOGIN_EXCEPTION_CASES };
+const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<RequestBody.Activate, typeof APIError> = [
+  {
+    name: "invalid link should throw NoFound",
+    body: { link: "invalid link" },
+    setup: null,
+    instance: APIError,
+    errors: "Invalid activation link",
+  },
+  {
+    name: "correct link no user should throw ",
+    body: { link: "noUserLink" },
+    setup: null,
+    instance: APIError,
+    errors: "Contact support for assistance",
+  },
+];
+
+export {
+  testSetuper,
+  AUTH_REG_EXCEPTION_CASES,
+  AUTH_LOGIN_EXCEPTION_CASES,
+  AUTH_USER_ACTIVATE_EXCEPTION_CASES,
+};

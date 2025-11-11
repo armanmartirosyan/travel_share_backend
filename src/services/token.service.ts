@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Env } from "../config/env.config.js";
+import { APIError } from "../errors/api.error.js";
 import { Tokens } from "../models/token.model.js";
 import type { TokenPair } from "../types/index.js";
 // import type { ITokens } from "../models/index.model.js";
@@ -44,6 +45,18 @@ class TokenService {
   public async removeToken(token: string): Promise<void> {
     await Tokens.findOneAndDelete({ refreshToken: token });
     return;
+  }
+
+  public verifyToken(token: string): JwtPayload {
+    try {
+      const userData: JwtPayload | string = jwt.verify(token, this._refreshTokenSecret, {
+        algorithms: ["HS256"],
+      });
+      if (typeof userData === "string") throw APIError.UnauthorizedError();
+      return userData;
+    } catch {
+      throw APIError.UnauthorizedError();
+    }
   }
 }
 

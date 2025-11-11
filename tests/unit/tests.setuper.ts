@@ -4,12 +4,13 @@ import mongoose from "mongoose";
 import nodeMailer from "nodemailer";
 import { Env } from "../../src/config/env.config";
 import { RedisService } from "../../src/config/redis.config";
-import { ActivationToken } from "../../src/models/activation.model";
+import { ActivationToken} from "../../src/models/activation.model";
 import { Tokens } from "../../src/models/token.model";
 import { User } from "../../src/models/user.model";
 import { MailService } from "../../src/services/mail.service";
 import { TokenService } from "../../src/services/token.service";
 import type { ValidatedEnv } from "../../src/types";
+import type { JwtPayload } from "jsonwebtoken";
 
 class TestSetuper {
   public readonly redisService;
@@ -53,10 +54,34 @@ class TestSetuper {
       iat: Date.now() / 1000,
       sub: "id",
     });
+    jwt.verify = jest.fn().mockImplementation((value: string): JwtPayload | string => {
+      if (value === "string") return value;
+      return {
+        iss: "travel_share_backend",
+        aud: "client",
+        iat: Date.now() / 1000,
+        sub: "id",
+      };
+    });
   }
 
   public setupActivationTokenModel(): void {
+    const mockActivationToken = new ActivationToken({
+      activationToken: "link",
+      userId: new mongoose.Types.ObjectId(),
+      save: jest.fn().mockResolvedValue(undefined),
+    });
+    //model save
     jest.spyOn(ActivationToken.prototype, "save").mockResolvedValue(undefined);
+
+    // model find
+    ActivationToken.findOne = jest.fn().mockImplementation(({ activationToken }) => {
+      if (activationToken === "link") {
+        return Promise.resolve(mockActivationToken);
+      } else if (activationToken === "noUserLink")
+        return Promise.resolve({ ...mockActivationToken, userId: "noUserLink" });
+      return Promise.resolve(null);
+    });
   }
 
   public setupNodeMailer(): void {
@@ -84,45 +109,41 @@ class TestSetuper {
   }
 
   public setupUserModel(): void {
+    const mockUser = new User({
+      email: "taken@example.com",
+      username: "takenusername",
+      password: "hashedPassword",
+    });
     // model saves
     jest.spyOn(User.prototype, "save").mockResolvedValue(undefined);
 
     // model find
     User.findOne = jest.fn().mockImplementation(({ email, username }) => {
       if (email === "taken@example.com" || username === "takenusername") {
-        const mockUser = {
-          _id: new mongoose.Types.ObjectId(),
-          email,
-          username,
-          password: "hashedPassword",
-          save: jest.fn().mockResolvedValue(undefined),
-        };
         return Promise.resolve(mockUser);
       }
       return Promise.resolve(null);
     });
+    // jest.spyOn(User, "findById").mockResolvedValue(mockUser);
+    User.findById = jest.fn().mockImplementation((id: string) => {
+      if (id === "noUserLink") return Promise.resolve(null);
+      return Promise.resolve(mockUser);
+    });
   }
 
   public setupTokenModel(): void {
+    const mockTokens = new Tokens({
+      userID: new mongoose.Types.ObjectId(),
+      refreshToken: "refreshToken",
+      expiresAt: new Date(),
+    });
     // model saves
     jest.spyOn(Tokens.prototype, "save").mockResolvedValue(undefined);
 
     // model find
-    jest.spyOn(Tokens, "findOne").mockResolvedValue({
-      userID: new mongoose.Types.ObjectId(),
-      refreshToken: "refreshToken",
-      expiresAt: new Date(),
-    });
-    jest.spyOn(Tokens, "findOneAndUpdate").mockResolvedValue({
-      userID: new mongoose.Types.ObjectId(),
-      refreshToken: "refreshToken",
-      expiresAt: new Date(),
-    });
-    jest.spyOn(Tokens, "findOneAndDelete").mockResolvedValue({
-      userID: new mongoose.Types.ObjectId(),
-      refreshToken: "refreshToken",
-      expiresAt: new Date(),
-    });
+    jest.spyOn(Tokens, "findOne").mockResolvedValue(mockTokens);
+    jest.spyOn(Tokens, "findOneAndUpdate").mockResolvedValue(mockTokens);
+    jest.spyOn(Tokens, "findOneAndDelete").mockResolvedValue(mockTokens);
   }
 
   public mockEnv(): ValidatedEnv {
