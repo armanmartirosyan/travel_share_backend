@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
 import { Tokens } from "../models/token.model.js";
+import type { ITokens } from "../models/token.model.js";
 import type { TokenPair } from "../types/index.js";
 // import type { ITokens } from "../models/index.model.js";
 import type { JwtPayload } from "jsonwebtoken";
@@ -45,6 +46,18 @@ class TokenService {
   public async removeToken(token: string): Promise<void> {
     await Tokens.findOneAndDelete({ refreshToken: token });
     return;
+  }
+
+  public async findToken(refreshToken: string | undefined): Promise<ITokens | null> {
+    if (!refreshToken) return null;
+    const token: ITokens | null = await Tokens.findOne({ refreshToken });
+    return token;
+  }
+
+  public async findTokenByUserId(userID: string | undefined): Promise<ITokens | null> {
+    if (!userID) return null;
+    const token: ITokens | null = await Tokens.findOne({ userID });
+    return token;
   }
 
   public verifyToken(token: string): JwtPayload {

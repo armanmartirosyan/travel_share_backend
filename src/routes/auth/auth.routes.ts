@@ -19,6 +19,7 @@ authRouter.post(
 );
 authRouter.post("/logout", authController.userLogout.bind(authController));
 authRouter.get("/activate/:link", authController.userActivate.bind(authController));
+authRouter.get("/refresh", authController.userRefresh.bind(authController));
 authRouter.post("/verify", AuthMiddleware.authHandler());
 
 export { authRouter };

@@ -7,8 +7,9 @@ import { Env } from "../config/env.config.js";
 import { RedisService } from "../config/redis.config.js";
 import { APIError } from "../errors/api.error.js";
 import { User, ActivationToken } from "../models/index.model.js";
-import type { IUser, IActivationToken } from "../models/index.model.js";
+import type { IUser, IActivationToken, ITokens } from "../models/index.model.js";
 import type { AuthServiceResponse, RequestBody, TokenPair, ValidatedEnv } from "../types/index.js";
+import type { JwtPayload } from "jsonwebtoken";
 
 class AuthService {
   private readonly MAX_LOGIN_ATTEMPTS: number = 5;
@@ -45,12 +46,7 @@ class AuthService {
       activationToken: uuidv4(),
       userId: user.id,
     });
-    const tokenPair: TokenPair = this._tokenService.generateTokens({
-      iss: "travel_share_backend",
-      aud: "client",
-      iat: Date.now() / 1000,
-      sub: user._id.toString(),
-    });
+    const tokenPair: TokenPair = this.generateTokens(user._id.toString());
 
     await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
     await user.save();
@@ -98,12 +94,7 @@ class AuthService {
       throw APIError.BadRequest("B400", "Invalid credentials");
     }
 
-    const tokenPair: TokenPair = this._tokenService.generateTokens({
-      iss: "travel_share_backend",
-      aud: "client",
-      iat: Math.floor(Date.now() / 1000),
-      sub: user._id.toString(),
-    });
+    const tokenPair: TokenPair = this.generateTokens(user._id.toString());
 
     await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
     await user.save();
@@ -131,6 +122,36 @@ class AuthService {
     user.isActive = true;
     await user.save();
     return;
+  }
+
+  public async userRefresh(refreshToken: string | undefined): Promise<AuthServiceResponse> {
+    if (!refreshToken) throw APIError.UnauthorizedError();
+    const payload: JwtPayload = this._tokenService.verifyToken(refreshToken);
+    const isTokenInDb: ITokens | null = await this._tokenService.findTokenByUserId(payload.sub);
+
+    if (!isTokenInDb || refreshToken !== isTokenInDb.refreshToken)
+      throw APIError.UnauthorizedError();
+
+    const user: IUser | null = await User.findById(payload.sub);
+    if (!user) throw APIError.UnauthorizedError();
+
+    const tokenPair: TokenPair = this.generateTokens(user._id.toString());
+    await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
+
+    return {
+      user,
+      tokenPair,
+    };
+  }
+
+  private generateTokens(userID: string): TokenPair {
+    const tokenPair = this._tokenService.generateTokens({
+      iss: "travel_share_backend",
+      aud: "client",
+      iat: Math.floor(Date.now() / 1000),
+      sub: userID,
+    });
+    return tokenPair;
   }
 }
 

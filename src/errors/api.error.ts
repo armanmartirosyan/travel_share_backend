@@ -1,10 +1,10 @@
 import type { ResponseMapType } from "../types/index.js";
 
 class APIError extends Error {
-  status: number;
-  success: boolean;
-  code: keyof ResponseMapType;
-  errors: any;
+  public readonly status: number;
+  public readonly success: boolean;
+  public readonly code: keyof ResponseMapType;
+  public readonly errors: any;
 
   constructor(status: number, code: keyof ResponseMapType, message: string, errors?: any) {
     super(message);
