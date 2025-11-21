@@ -9,7 +9,7 @@ import { Tokens } from "../../src/models/token.model";
 import { User } from "../../src/models/user.model";
 import { MailService } from "../../src/services/mail.service";
 import { TokenService } from "../../src/services/token.service";
-import type { ITokens} from "../../src/models/token.model";
+import type { ITokens } from "../../src/models/token.model";
 import type { ValidatedEnv } from "../../src/types";
 import type { JwtPayload } from "jsonwebtoken";
 
