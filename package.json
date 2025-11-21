@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc-watch --onSuccess \" node dist/\"",
-    "start:test": "jest",
+    "start:test": "jest --watch",
     "build:prod": "tsc -p tsconfig.json",
     "build:dev": "tsc -p tsconfig.build.json",
     "format": "prettier --write .",

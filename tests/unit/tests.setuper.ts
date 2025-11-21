@@ -9,6 +9,7 @@ import { Tokens } from "../../src/models/token.model";
 import { User } from "../../src/models/user.model";
 import { MailService } from "../../src/services/mail.service";
 import { TokenService } from "../../src/services/token.service";
+import type { ITokens} from "../../src/models/token.model";
 import type { ValidatedEnv } from "../../src/types";
 import type { JwtPayload } from "jsonwebtoken";
 
@@ -47,21 +48,19 @@ class TestSetuper {
   }
 
   public setupJwt(): void {
-    jwt.sign = jest.fn().mockResolvedValue("Token");
-    jwt.decode = jest.fn().mockResolvedValue({
+    const mockJwtPayload = {
       iss: "travel_share_backend",
       aud: "client",
       iat: Date.now() / 1000,
       sub: "id",
-    });
+    };
+    jwt.sign = jest.fn().mockResolvedValue("Token");
+    jwt.decode = jest.fn().mockResolvedValue(mockJwtPayload);
     jwt.verify = jest.fn().mockImplementation((value: string): JwtPayload | string => {
       if (value === "string") return value;
-      return {
-        iss: "travel_share_backend",
-        aud: "client",
-        iat: Date.now() / 1000,
-        sub: "id",
-      };
+      else if (value === "refreshTokenNotInDb") return { ...mockJwtPayload, sub: "noUser" };
+      else if (value === "tokenNoUser") return { ...mockJwtPayload, sub: "tokenNoUser" };
+      return mockJwtPayload;
     });
   }
 
@@ -75,11 +74,12 @@ class TestSetuper {
     jest.spyOn(ActivationToken.prototype, "save").mockResolvedValue(undefined);
 
     // model find
-    ActivationToken.findOne = jest.fn().mockImplementation(({ activationToken }) => {
-      if (activationToken === "link") {
-        return Promise.resolve(mockActivationToken);
-      } else if (activationToken === "noUserLink")
-        return Promise.resolve({ ...mockActivationToken, userId: "noUserLink" });
+    ActivationToken.findOne = jest.fn().mockImplementation(({ activationToken, userID }) => {
+      if (activationToken === "link") return Promise.resolve(mockActivationToken);
+      else if (activationToken === "noUser")
+        return Promise.resolve({ ...mockActivationToken, userId: "noUser" });
+      else if (userID === "id") return Promise.resolve(mockActivationToken);
+
       return Promise.resolve(null);
     });
   }
@@ -91,11 +91,26 @@ class TestSetuper {
   }
 
   public setupTokenService(): void {
-    jest
-      .spyOn(TokenService.prototype, "generateTokens")
-      .mockReturnValue({ accessToken: "a", refreshToken: "r" });
+    const mockTokens = new Tokens({
+      userID: new mongoose.Types.ObjectId(),
+      refreshToken: "refreshToken",
+      expiresAt: new Date(),
+    });
+    const tokensPair = {
+      accessToken: "a",
+      refreshToken: "r",
+    };
+    jest.spyOn(TokenService.prototype, "generateTokens").mockReturnValue(tokensPair);
     jest.spyOn(TokenService.prototype, "saveToken").mockResolvedValue(undefined);
     jest.spyOn(TokenService.prototype, "removeToken").mockResolvedValue(undefined);
+    jest
+      .spyOn(TokenService.prototype, "findTokenByUserId")
+      .mockImplementation(async (userID: string | undefined): Promise<ITokens | null> => {
+        if (userID === "noUser") return null;
+        else if (userID === "tokenNoUser")
+          return { ...mockTokens, refreshToken: "tokenNoUser" } as unknown as ITokens;
+        return mockTokens;
+      });
   }
 
   public setupRedisService(): void {
@@ -124,9 +139,8 @@ class TestSetuper {
       }
       return Promise.resolve(null);
     });
-    // jest.spyOn(User, "findById").mockResolvedValue(mockUser);
     User.findById = jest.fn().mockImplementation((id: string) => {
-      if (id === "noUserLink") return Promise.resolve(null);
+      if (id === "noUser" || id === "tokenNoUser") return Promise.resolve(null);
       return Promise.resolve(mockUser);
     });
   }

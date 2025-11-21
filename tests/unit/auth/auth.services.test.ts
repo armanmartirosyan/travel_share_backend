@@ -4,8 +4,8 @@ import {
   AUTH_REG_EXCEPTION_CASES,
   AUTH_LOGIN_EXCEPTION_CASES,
   AUTH_USER_ACTIVATE_EXCEPTION_CASES,
+  AUTH_USER_REFRESH_EXCEPTION_CASES,
 } from "./auth.service.cases";
-import { APIError } from "../../../src/errors/api.error";
 import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
@@ -22,6 +22,7 @@ describe("AuthService", (): void => {
     testSetuper.setupEnv();
     testSetuper.setupBcrypt();
     testSetuper.setupNodeMailer();
+    testSetuper.setupJwt();
 
     testSetuper.setupRedisService();
     testSetuper.setupTokenService();
@@ -58,13 +59,14 @@ describe("AuthService", (): void => {
       );
     });
 
-    test.each(AUTH_REG_EXCEPTION_CASES)("$name", async ({ body, instance, errors }) => {
+    test.each(AUTH_REG_EXCEPTION_CASES)("$name", async ({ body, message, instance, errors }) => {
       try {
         const authService = new AuthService();
         await authService.userRegistration(body);
         fail("Should throw an error");
       } catch (e: any) {
         expect(e).toBeInstanceOf(instance);
+        expect(e.message).toBe(message);
         expect(e.errors).toBe(errors);
       }
     });
@@ -109,17 +111,21 @@ describe("AuthService", (): void => {
       expect(TokenService.prototype.saveToken).toHaveBeenCalled();
     });
 
-    test.each(AUTH_LOGIN_EXCEPTION_CASES)("$name", async ({ body, setup, instance, errors }) => {
-      try {
-        const authService = new AuthService();
-        if (setup !== null) setup();
-        await authService.userLogin(body, baseIp);
-        fail("Should throw an error");
-      } catch (e: any) {
-        expect(e).toBeInstanceOf(instance);
-        expect(e.errors).toBe(errors);
-      }
-    });
+    test.each(AUTH_LOGIN_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, message, setup, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          if (setup !== null) setup();
+          await authService.userLogin(body, baseIp);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
   });
 
   describe("userLogout", (): void => {
@@ -144,26 +150,52 @@ describe("AuthService", (): void => {
       expect(User.prototype.save).toHaveBeenCalled();
     });
 
-    it("invalid link should throw NoFound", async (): Promise<void> => {
-      try {
-        const authService = new AuthService();
+    test.each(AUTH_USER_ACTIVATE_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          await authService.userActivate(body.link);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
 
-        await authService.userActivate("invalid_link");
-        fail("should throw NoFound error");
-      } catch (error: unknown) {
-        expect(error).toBeInstanceOf(APIError);
-      }
+  describe("userRefresh", (): void => {
+    const refreshToken: string = "refreshToken";
+
+    it("successfully refresh credentials", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthServiceResponse = await authService.userRefresh(refreshToken);
+
+      expect(res).toHaveProperty("user");
+      expect(res).toHaveProperty("tokenPair");
+
+      expect(TokenService.prototype.findTokenByUserId).toHaveBeenCalled();
+      expect(TokenService.prototype.generateTokens).toHaveBeenCalled();
+      expect(TokenService.prototype.saveToken).toHaveBeenCalled();
+      expect(TokenService.prototype.saveToken).toHaveBeenCalled();
     });
 
-    test.each(AUTH_USER_ACTIVATE_EXCEPTION_CASES)("$name", async ({ body, instance, errors }) => {
-      try {
-        const authService = new AuthService();
-        await authService.userActivate(body.link);
-        fail("Should throw an error");
-      } catch (e: any) {
-        expect(e).toBeInstanceOf(instance);
-        expect(e.errors).toBe(errors);
-      }
-    });
+    test.each(AUTH_USER_REFRESH_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          await authService.userRefresh(body.refreshToken);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
   });
 });

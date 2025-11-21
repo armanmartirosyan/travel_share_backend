@@ -20,7 +20,7 @@ class APIError extends Error {
   }
 
   static BadRequest(code: keyof ResponseMapType, errors: any): APIError {
-    return new APIError(400, code, "Bad Reqeust", errors);
+    return new APIError(400, code, "Bad Request", errors);
   }
 
   static NoFound(code: keyof ResponseMapType, errors: any): APIError {

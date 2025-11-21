@@ -23,6 +23,7 @@ const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof 
   {
     name: "throws when email already exists",
     body: { ...baseRegBody, email: "taken@example.com" },
+    message: "Bad Request",
     setup: null,
     instance: APIError,
     errors: "Email is already taken",
@@ -30,6 +31,7 @@ const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof 
   {
     name: "throws when username already exists",
     body: { ...baseRegBody, username: "takenusername" },
+    message: "Bad Request",
     setup: null,
     instance: APIError,
     errors: "Username is already taken",
@@ -37,6 +39,7 @@ const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof 
   {
     name: "throws when passwords do not match",
     body: { ...baseRegBody, passwordConfirm: "no-match" },
+    message: "Bad Request",
     setup: null,
     instance: APIError,
     errors: "Passwrods do no match",
@@ -47,6 +50,7 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   {
     name: "too many requests",
     body: baseLoginBody,
+    message: "Too Many Requests",
     setup: (): void => {
       testSetuper.redisService.get.mockResolvedValueOnce("5");
     },
@@ -56,6 +60,7 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   {
     name: "no such user",
     body: baseLoginBody,
+    message: "Bad Request",
     setup: null,
     instance: APIError,
     errors: "Invalid credentials",
@@ -63,6 +68,7 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   {
     name: "wrong password",
     body: { password: "wrongPassword", login: "taken@example.com" },
+    message: "Bad Request",
     setup: null,
     instance: APIError,
     errors: "Invalid credentials",
@@ -73,16 +79,48 @@ const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<RequestBody.Activate, t
   {
     name: "invalid link should throw NoFound",
     body: { link: "invalid link" },
+    message: "Not Found",
     setup: null,
     instance: APIError,
     errors: "Invalid activation link",
   },
   {
     name: "correct link no user should throw ",
-    body: { link: "noUserLink" },
+    body: { link: "noUser" },
+    message: "Internal Server Error",
     setup: null,
     instance: APIError,
     errors: "Contact support for assistance",
+  },
+];
+
+const AUTH_USER_REFRESH_EXCEPTION_CASES: ExceptionCases<
+  { refreshToken: string | undefined },
+  typeof APIError
+> = [
+  {
+    name: "no refresh token provided should throw",
+    body: { refreshToken: undefined },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "no refresh token in database should throw",
+    body: { refreshToken: "refreshTokenNotInDb" },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "no user with such id",
+    body: { refreshToken: "tokenNoUser" },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
   },
 ];
 
@@ -91,4 +129,5 @@ export {
   AUTH_REG_EXCEPTION_CASES,
   AUTH_LOGIN_EXCEPTION_CASES,
   AUTH_USER_ACTIVATE_EXCEPTION_CASES,
+  AUTH_USER_REFRESH_EXCEPTION_CASES,
 };
