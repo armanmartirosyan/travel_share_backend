@@ -4,6 +4,7 @@ import { APIError } from "../../../src/errors/api.error";
 import { Tokens } from "../../../src/models/token.model";
 import { TokenService } from "../../../src/services/token.service";
 import { TestSetuper } from "../tests.setuper";
+import type { ITokens } from "../../../src/models/token.model";
 import type { TokenPair } from "../../../src/types";
 import type { JwtPayload } from "jsonwebtoken";
 import type { Types } from "mongoose";
@@ -90,6 +91,48 @@ describe("TokenService", (): void => {
         expect(error).toBeInstanceOf(APIError);
         expect(error).toMatchObject(APIError.UnauthorizedError());
       }
+    });
+  });
+
+  describe("findToken", (): void => {
+    const token: string = "token";
+
+    it("received undefined should return null", async (): Promise<void> => {
+      const tokenService = new TokenService();
+
+      const user: ITokens | null = await tokenService.findToken(undefined);
+
+      expect(user).toBe(null);
+    });
+
+    it("shour return IToken", async (): Promise<void> => {
+      const tokenService = new TokenService();
+
+      const res: ITokens | null = await tokenService.findToken(token);
+
+      expect(res).toHaveProperty("refreshToken");
+      expect(res).toHaveProperty("userID");
+    });
+  });
+
+  describe("findTokenByUserId", (): void => {
+    const token: string = "token";
+
+    it("received undefined should return null", async (): Promise<void> => {
+      const tokenService = new TokenService();
+
+      const user: ITokens | null = await tokenService.findTokenByUserId(undefined);
+
+      expect(user).toBe(null);
+    });
+
+    it("shour return IToken", async (): Promise<void> => {
+      const tokenService = new TokenService();
+
+      const res: ITokens | null = await tokenService.findTokenByUserId(token);
+
+      expect(res).toHaveProperty("refreshToken");
+      expect(res).toHaveProperty("userID");
     });
   });
 });
