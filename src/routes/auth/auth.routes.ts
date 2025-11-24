@@ -25,6 +25,6 @@ authRouter.post(
   Validator.commonBodyFields(["email"]),
   authController.forgotPassword.bind(authController),
 );
-// authRouter.post("reset-password")
+// authRouter.post("/reset-password")
 
 export { authRouter };

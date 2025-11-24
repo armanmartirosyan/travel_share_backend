@@ -151,10 +151,12 @@ class AuthService {
     const commonResponse: AuthResponse.ForgotPassword = {
       message: "If an account with that email exists, a password reset link has been sent.",
     };
-    const checkSendMail: string | null = await this._redis.get(`reset:mail${email}`);
-    if (checkSendMail) return commonResponse;
+
     const isEmail: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isEmail) throw APIError.BadRequest("V400", "Invalid Email Address");
+
+    const checkSendMail: string | null = await this._redis.get(`reset:mail:${email}`);
+    if (checkSendMail) return commonResponse;
 
     const isEmailExist: IUser | null = await User.findOne({ email });
     if (!isEmailExist) return commonResponse;
