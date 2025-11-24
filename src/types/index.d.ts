@@ -1,5 +1,5 @@
 import type { ApiResponse } from "./api/api.js";
-import type { AuthResponse, AuthServiceResponse, RequestBody } from "./api/auth.js";
+import type { AuthResponse, AuthServiceResponse, AuthRequestBody } from "./api/auth.js";
 import type { TokenPair } from "./api/token.js";
 import type { ColorType, MethodMapType } from "./common/logger.js";
 import type { ResponseMapType } from "./common/response.js";
@@ -13,7 +13,7 @@ export type {
   EnvList,
   MethodMapType,
   ResponseMapType,
-  RequestBody,
+  AuthRequestBody,
   TokenPair,
   ValidatedEnv,
 };

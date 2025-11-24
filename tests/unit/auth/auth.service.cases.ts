@@ -1,11 +1,11 @@
 import { APIError } from "../../../src/errors/api.error";
 import { TestSetuper } from "../tests.setuper";
 import type { ExceptionCases } from "./auth.service";
-import type { RequestBody } from "../../../src/types";
+import type { AuthRequestBody } from "../../../src/types";
 
 const testSetuper = new TestSetuper();
 
-const baseRegBody: RequestBody.Registration = {
+const baseRegBody: AuthRequestBody.Registration = {
   username: "username",
   email: "email@example.com",
   name: "name",
@@ -14,12 +14,12 @@ const baseRegBody: RequestBody.Registration = {
   passwordConfirm: "password",
 };
 
-const baseLoginBody: RequestBody.Login = {
+const baseLoginBody: AuthRequestBody.Login = {
   login: "email@email.com",
   password: "password",
 };
 
-const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof APIError> = [
+const AUTH_REG_EXCEPTION_CASES: ExceptionCases<AuthRequestBody.Registration, typeof APIError> = [
   {
     name: "throws when email already exists",
     body: { ...baseRegBody, email: "taken@example.com" },
@@ -46,7 +46,7 @@ const AUTH_REG_EXCEPTION_CASES: ExceptionCases<RequestBody.Registration, typeof 
   },
 ];
 
-const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIError> = [
+const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<AuthRequestBody.Login, typeof APIError> = [
   {
     name: "too many requests",
     body: baseLoginBody,
@@ -75,7 +75,10 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<RequestBody.Login, typeof APIEr
   },
 ];
 
-const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<RequestBody.Activate, typeof APIError> = [
+const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<
+  AuthRequestBody.Activate,
+  typeof APIError
+> = [
   {
     name: "invalid link should throw NoFound",
     body: { link: "invalid link" },

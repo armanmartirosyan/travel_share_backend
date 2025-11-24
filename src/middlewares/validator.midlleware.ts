@@ -17,21 +17,6 @@ class Validator {
     return handler;
   }
 
-  public static optionalBodyFields(fields: string[]): RequestHandler {
-    function handler(req: Request, _res: Response, next: NextFunction): void {
-      let existCount: number = 0;
-
-      Validator.checkBodyExisting(req);
-      for (const field of fields) {
-        if (req.body[field] !== undefined && req.body[field] !== null) existCount++;
-      }
-
-      if (existCount > 1) throw APIError.BadRequest("TM400", fields);
-      next();
-    }
-    return handler;
-  }
-
   private static checkBodyExisting(req: Request): void {
     if (req.body === undefined || req.body === null)
       throw APIError.BadRequest("B400", "No request body provided");

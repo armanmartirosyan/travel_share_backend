@@ -7,7 +7,7 @@ import type {
   ApiResponse,
   AuthResponse,
   AuthServiceResponse,
-  RequestBody,
+  AuthRequestBody,
   ValidatedEnv,
 } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
@@ -24,7 +24,7 @@ class AuthController {
   }
 
   public async userRegistration(
-    req: Request<{}, {}, RequestBody.Registration>,
+    req: Request<{}, {}, AuthRequestBody.Registration>,
     res: Response<ApiResponse<AuthResponse>>,
     next: NextFunction,
   ): Promise<void> {
@@ -43,7 +43,7 @@ class AuthController {
   }
 
   public async userLogin(
-    req: Request<{}, {}, RequestBody.Login>,
+    req: Request<{}, {}, AuthRequestBody.Login>,
     res: Response<ApiResponse<AuthResponse>>,
     next: NextFunction,
   ): Promise<void> {
@@ -78,7 +78,7 @@ class AuthController {
   }
 
   public async userActivate(
-    req: Request<RequestBody.Activate>,
+    req: Request<AuthRequestBody.Activate>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
@@ -110,6 +110,12 @@ class AuthController {
       next(error);
     }
   }
+
+  public async forgotPassword(
+    _req: Request,
+    _res: Response<ApiResponse<null>>,
+    _next: NextFunction,
+  ): Promise<void> {}
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {

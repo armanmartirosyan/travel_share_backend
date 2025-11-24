@@ -14,12 +14,12 @@ authRouter.post(
 authRouter.post(
   "/login",
   Validator.commonBodyFields(["password"]),
-  Validator.optionalBodyFields(["email", "username"]),
   authController.userLogin.bind(authController),
 );
 authRouter.post("/logout", authController.userLogout.bind(authController));
 authRouter.get("/activate/:link", authController.userActivate.bind(authController));
 authRouter.get("/refresh", authController.userRefresh.bind(authController));
 authRouter.post("/verify", AuthMiddleware.authHandler());
+// authRouter.post("/forgot-password", Validator.commonBodyFields(["email"]), authController.);
 
 export { authRouter };

@@ -8,7 +8,12 @@ import { RedisService } from "../config/redis.config.js";
 import { APIError } from "../errors/api.error.js";
 import { User, ActivationToken } from "../models/index.model.js";
 import type { IUser, IActivationToken, ITokens } from "../models/index.model.js";
-import type { AuthServiceResponse, RequestBody, TokenPair, ValidatedEnv } from "../types/index.js";
+import type {
+  AuthServiceResponse,
+  AuthRequestBody,
+  TokenPair,
+  ValidatedEnv,
+} from "../types/index.js";
 import type { JwtPayload } from "jsonwebtoken";
 
 class AuthService {
@@ -27,7 +32,7 @@ class AuthService {
     this._redis = RedisService.instance;
   }
 
-  public async userRegistration(body: RequestBody.Registration): Promise<AuthServiceResponse> {
+  public async userRegistration(body: AuthRequestBody.Registration): Promise<AuthServiceResponse> {
     const { username, email, name, surname, password, passwordConfirm } = body;
     const isEmailExist: IUser | null = await User.findOne({ email });
     if (isEmailExist) {
@@ -62,7 +67,7 @@ class AuthService {
   }
 
   public async userLogin(
-    body: RequestBody.Login,
+    body: AuthRequestBody.Login,
     ip: string | undefined,
   ): Promise<AuthServiceResponse> {
     const identifier: string = body.login; // login field from request body

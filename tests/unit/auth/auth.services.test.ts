@@ -10,7 +10,7 @@ import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
 import { TokenService } from "../../../src/services/token.service";
-import type { AuthServiceResponse, RequestBody } from "../../../src/types";
+import type { AuthServiceResponse, AuthRequestBody } from "../../../src/types";
 
 jest.mock("node:timers/promises");
 jest.mock("../../../src/common/logger");
@@ -33,7 +33,7 @@ describe("AuthService", (): void => {
   });
 
   describe("userRegistration", (): void => {
-    const bodyBase: RequestBody.Registration = {
+    const bodyBase: AuthRequestBody.Registration = {
       username: "username",
       email: "email@example.com",
       name: "name",
@@ -74,7 +74,7 @@ describe("AuthService", (): void => {
 
   describe("userLogin", (): void => {
     const baseIp: string = "127.0.0.1";
-    const bodyBase: RequestBody.Login = {
+    const bodyBase: AuthRequestBody.Login = {
       login: "taken@example.com",
       password: "password",
     };
