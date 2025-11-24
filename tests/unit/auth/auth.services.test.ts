@@ -219,12 +219,25 @@ describe("AuthService", (): void => {
       );
     });
 
-    it("get common response", async (): Promise<void> => {
+    it("email doesn't exist, get common response", async (): Promise<void> => {
       const authService = new AuthService();
 
       const res: AuthResponse.ForgotPassword = await authService.forgotPassword(
         "notExistEmail@example.com",
       );
+
+      expect(res).toHaveProperty("message");
+      expect(res.message).toBe(
+        "If an account with that email exists, a password reset link has been sent.",
+      );
+    });
+
+    it("email already sent, get common response", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      testSetuper.redisService.get.mockResolvedValueOnce("alreadySent@example.com");
+      const res: AuthResponse.ForgotPassword =
+        await authService.forgotPassword("alreadySent@example.com");
 
       expect(res).toHaveProperty("message");
       expect(res.message).toBe(

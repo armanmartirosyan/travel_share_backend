@@ -151,6 +151,8 @@ class AuthService {
     const commonResponse: AuthResponse.ForgotPassword = {
       message: "If an account with that email exists, a password reset link has been sent.",
     };
+    const checkSendMail: string | null = await this._redis.get(`reset:mail${email}`);
+    if (checkSendMail) return commonResponse;
     const isEmail: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isEmail) throw APIError.BadRequest("V400", "Invalid Email Address");
 
@@ -161,6 +163,7 @@ class AuthService {
     const hashedToken: string = crypto.createHash("sha256").update(rawToken).digest("hex");
 
     await this._redis.setEx(`reset:token:${hashedToken}`, isEmailExist._id.toString(), 900);
+    await this._redis.setEx(`reset:mail:${email}`, email, 900);
     await this._mailService.sendForgotPasswordMail(
       email,
       `${this._env.CLIENT_URL}/api/user/reset-password/?token=${rawToken}`,
