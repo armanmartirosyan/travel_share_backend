@@ -209,7 +209,9 @@ describe("AuthService", (): void => {
       const res: AuthResponse.ForgotPassword = await authService.forgotPassword(commonEmail);
 
       expect(res).toHaveProperty("message");
-      expect(res.message).toBe("If an account with that email exists, a password reset link has been sent.");
+      expect(res.message).toBe(
+        "If an account with that email exists, a password reset link has been sent.",
+      );
 
       expect(MailService.prototype.sendForgotPasswordMail).toHaveBeenCalledWith(
         commonEmail,
@@ -220,10 +222,14 @@ describe("AuthService", (): void => {
     it("get common response", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthResponse.ForgotPassword = await authService.forgotPassword("notExistEmail@example.com");
+      const res: AuthResponse.ForgotPassword = await authService.forgotPassword(
+        "notExistEmail@example.com",
+      );
 
       expect(res).toHaveProperty("message");
-      expect(res.message).toBe("If an account with that email exists, a password reset link has been sent.");
+      expect(res.message).toBe(
+        "If an account with that email exists, a password reset link has been sent.",
+      );
     });
 
     test.each(AUTH_FORGOT_PASSWORD_EXCEPTION_CASES)(

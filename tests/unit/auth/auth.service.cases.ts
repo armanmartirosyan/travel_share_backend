@@ -79,67 +79,67 @@ const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<
   AuthRequestBody.Activate,
   typeof APIError
 > = [
-    {
-      name: "invalid link should throw NoFound",
-      body: { link: "invalid link" },
-      message: "Not Found",
-      setup: null,
-      instance: APIError,
-      errors: "Invalid activation link",
-    },
-    {
-      name: "correct link no user should throw ",
-      body: { link: "noUser" },
-      message: "Internal Server Error",
-      setup: null,
-      instance: APIError,
-      errors: "Contact support for assistance",
-    },
-  ];
+  {
+    name: "invalid link should throw NoFound",
+    body: { link: "invalid link" },
+    message: "Not Found",
+    setup: null,
+    instance: APIError,
+    errors: "Invalid activation link",
+  },
+  {
+    name: "correct link no user should throw ",
+    body: { link: "noUser" },
+    message: "Internal Server Error",
+    setup: null,
+    instance: APIError,
+    errors: "Contact support for assistance",
+  },
+];
 
 const AUTH_USER_REFRESH_EXCEPTION_CASES: ExceptionCases<
   { refreshToken: string | undefined },
   typeof APIError
 > = [
-    {
-      name: "no refresh token provided should throw",
-      body: { refreshToken: undefined },
-      message: "User is not authorized.",
-      setup: null,
-      instance: APIError,
-      errors: undefined,
-    },
-    {
-      name: "no refresh token in database should throw",
-      body: { refreshToken: "refreshTokenNotInDb" },
-      message: "User is not authorized.",
-      setup: null,
-      instance: APIError,
-      errors: undefined,
-    },
-    {
-      name: "no user with such id",
-      body: { refreshToken: "tokenNoUser" },
-      message: "User is not authorized.",
-      setup: null,
-      instance: APIError,
-      errors: undefined,
-    },
-  ];
+  {
+    name: "no refresh token provided should throw",
+    body: { refreshToken: undefined },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "no refresh token in database should throw",
+    body: { refreshToken: "refreshTokenNotInDb" },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "no user with such id",
+    body: { refreshToken: "tokenNoUser" },
+    message: "User is not authorized.",
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+];
 
 const AUTH_FORGOT_PASSWORD_EXCEPTION_CASES: ExceptionCases<
   AuthRequestBody.ForgotPassword,
   typeof APIError
 > = [
-    {
-      name: "invalid mail format",
-      body: { email: "notValidEmail" },
-      message: "Bad Request",
-      setup: null,
-      instance: APIError,
-      errors: "Invalid Email Address",
-    },
-  ];
+  {
+    name: "invalid mail format",
+    body: { email: "notValidEmail" },
+    message: "Bad Request",
+    setup: null,
+    instance: APIError,
+    errors: "Invalid Email Address",
+  },
+];
 
 export {
   testSetuper,

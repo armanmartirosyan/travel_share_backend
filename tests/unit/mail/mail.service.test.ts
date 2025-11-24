@@ -38,7 +38,7 @@ describe("MailService", (): void => {
   it("should log.warn error if send mail is failed", async (): Promise<void> => {
     const warnSpy: jest.SpyInstance = jest
       .spyOn(Logger.prototype, "warn")
-      .mockImplementation((): void => { });
+      .mockImplementation((): void => {});
 
     const mail = new MailService();
 
@@ -52,7 +52,6 @@ describe("MailService", (): void => {
   });
 
   describe("sendActivationMail", (): void => {
-
     it("should call transporter.sendMail when MAIL_SERVICE is true", async (): Promise<void> => {
       const mail = new MailService();
 
@@ -62,15 +61,13 @@ describe("MailService", (): void => {
 
       expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({ to: baseTo }));
     });
-
   });
-
 
   describe("sendForgotPasswordMail", (): void => {
     it("should call transporter.sendMail when MAIL_SERVICE is true ", async (): Promise<void> => {
       const warnSpy: jest.SpyInstance = jest
         .spyOn(Logger.prototype, "warn")
-        .mockImplementation((): void => { });
+        .mockImplementation((): void => {});
 
       const mail = new MailService();
 
