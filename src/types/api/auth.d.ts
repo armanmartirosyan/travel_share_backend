@@ -15,14 +15,22 @@ export namespace AuthRequestBody {
   type Login = { login: string; password: string };
 
   type Activate = { link: string };
+
+  type ForgotPassword = { email: string };
 }
 
-export type AuthResponse = {
-  user: UserDTO;
-  accessToken: string;
-};
+export namespace AuthResponse {
+  type Session = {
+    user: UserDTO;
+    accessToken: string;
+  };
 
-export type AuthServiceResponse = {
-  user: IUser;
-  tokenPair: TokenPair;
-};
+  type UserAndToken = {
+    user: IUser;
+    tokenPair: TokenPair;
+  };
+
+  type ForgotPassword = {
+    message: string;
+  };
+}

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { setTimeout } from "node:timers/promises";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
@@ -8,12 +9,7 @@ import { RedisService } from "../config/redis.config.js";
 import { APIError } from "../errors/api.error.js";
 import { User, ActivationToken } from "../models/index.model.js";
 import type { IUser, IActivationToken, ITokens } from "../models/index.model.js";
-import type {
-  AuthServiceResponse,
-  AuthRequestBody,
-  TokenPair,
-  ValidatedEnv,
-} from "../types/index.js";
+import type { AuthResponse, AuthRequestBody, TokenPair, ValidatedEnv } from "../types/index.js";
 import type { JwtPayload } from "jsonwebtoken";
 
 class AuthService {
@@ -32,7 +28,9 @@ class AuthService {
     this._redis = RedisService.instance;
   }
 
-  public async userRegistration(body: AuthRequestBody.Registration): Promise<AuthServiceResponse> {
+  public async userRegistration(
+    body: AuthRequestBody.Registration,
+  ): Promise<AuthResponse.UserAndToken> {
     const { username, email, name, surname, password, passwordConfirm } = body;
     const isEmailExist: IUser | null = await User.findOne({ email });
     if (isEmailExist) {
@@ -69,8 +67,8 @@ class AuthService {
   public async userLogin(
     body: AuthRequestBody.Login,
     ip: string | undefined,
-  ): Promise<AuthServiceResponse> {
-    const identifier: string = body.login; // login field from request body
+  ): Promise<AuthResponse.UserAndToken> {
+    const identifier: string = body.login;
     const redisKey: string = `login:attempts:${identifier}:${ip}`;
 
     const attemptsStr: string | null = await this._redis.get(redisKey);
@@ -129,7 +127,7 @@ class AuthService {
     return;
   }
 
-  public async userRefresh(refreshToken: string | undefined): Promise<AuthServiceResponse> {
+  public async userRefresh(refreshToken: string | undefined): Promise<AuthResponse.UserAndToken> {
     if (!refreshToken) throw APIError.UnauthorizedError();
     const payload: JwtPayload = this._tokenService.verifyToken(refreshToken);
     const isTokenInDb: ITokens | null = await this._tokenService.findTokenByUserId(payload.sub);
@@ -147,6 +145,28 @@ class AuthService {
       user,
       tokenPair,
     };
+  }
+
+  public async forgotPassword(email: string): Promise<AuthResponse.ForgotPassword> {
+    const commonResponse: AuthResponse.ForgotPassword = {
+      message: "If an account with that email exists, a password reset link has been sent.",
+    };
+    const isEmail: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isEmail) throw APIError.BadRequest("V400", "Invalid Email Address");
+
+    const isEmailExist: IUser | null = await User.findOne({ email });
+    if (!isEmailExist) return commonResponse;
+
+    const rawToken: string = uuidv4();
+    const hashedToken: string = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    await this._redis.setEx(`reset:token:${hashedToken}`, isEmailExist._id.toString(), 900);
+    await this._mailService.sendForgotPasswordMail(
+      email,
+      `${this._env.CLIENT_URL}/api/user/reset-password/?token=${rawToken}`,
+    );
+
+    return commonResponse;
   }
 
   private generateTokens(userID: string): TokenPair {

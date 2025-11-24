@@ -20,6 +20,11 @@ class ErrorMiddleware {
         res.status(400).json(ResponseGenerator.error("V400", { reason: error.errors }));
         return;
       }
+      if (error instanceof SyntaxError) {
+        ErrorMiddleware._logger.warn(error);
+        res.status(400).json(ResponseGenerator.error("B400", { reason: error.message }));
+        return;
+      }
       res.status(500).json(ResponseGenerator.error("INTERNAL_SERVER_ERROR"));
       ErrorMiddleware._logger.error("Unexpected error", error);
       return;

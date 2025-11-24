@@ -3,13 +3,7 @@ import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
 import { AuthService } from "../services/auth.service.js";
-import type {
-  ApiResponse,
-  AuthResponse,
-  AuthServiceResponse,
-  AuthRequestBody,
-  ValidatedEnv,
-} from "../types/index.js";
+import type { ApiResponse, AuthResponse, AuthRequestBody, ValidatedEnv } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
 
 class AuthController {
@@ -25,17 +19,17 @@ class AuthController {
 
   public async userRegistration(
     req: Request<{}, {}, AuthRequestBody.Registration>,
-    res: Response<ApiResponse<AuthResponse>>,
+    res: Response<ApiResponse<AuthResponse.Session>>,
     next: NextFunction,
   ): Promise<void> {
     try {
-      const result: AuthServiceResponse = await this._authService.userRegistration(req.body);
+      const result: AuthResponse.UserAndToken = await this._authService.userRegistration(req.body);
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
-      const response: AuthResponse = {
+      const response: AuthResponse.Session = {
         user: new UserDTO(result.user),
         accessToken: result.tokenPair.accessToken,
       };
-      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
+      res.status(200).json(ResponseGenerator.success<AuthResponse.Session>("OK", response));
       return;
     } catch (error: unknown) {
       next(error);
@@ -44,17 +38,17 @@ class AuthController {
 
   public async userLogin(
     req: Request<{}, {}, AuthRequestBody.Login>,
-    res: Response<ApiResponse<AuthResponse>>,
+    res: Response<ApiResponse<AuthResponse.Session>>,
     next: NextFunction,
   ): Promise<void> {
     try {
-      const result: AuthServiceResponse = await this._authService.userLogin(req.body, req.ip);
+      const result: AuthResponse.UserAndToken = await this._authService.userLogin(req.body, req.ip);
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
-      const response: AuthResponse = {
+      const response: AuthResponse.Session = {
         user: new UserDTO(result.user),
         accessToken: result.tokenPair.accessToken,
       };
-      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
+      res.status(200).json(ResponseGenerator.success<AuthResponse.Session>("OK", response));
       return;
     } catch (error: unknown) {
       next(error);
@@ -63,7 +57,7 @@ class AuthController {
 
   public async userLogout(
     req: Request,
-    res: Response<ApiResponse<AuthResponse>>,
+    res: Response<ApiResponse<AuthResponse.Session>>,
     next: NextFunction,
   ): Promise<void> {
     try {
@@ -94,28 +88,36 @@ class AuthController {
 
   public async userRefresh(
     req: Request,
-    res: Response<ApiResponse<AuthResponse>>,
+    res: Response<ApiResponse<AuthResponse.Session>>,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { refreshToken } = req.cookies;
-      const result: AuthServiceResponse = await this._authService.userRefresh(refreshToken);
-      const response: AuthResponse = {
+      const result: AuthResponse.UserAndToken = await this._authService.userRefresh(refreshToken);
+      const response: AuthResponse.Session = {
         user: new UserDTO(result.user),
         accessToken: result.tokenPair.accessToken,
       };
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
-      res.status(200).json(ResponseGenerator.success<AuthResponse>("OK", response));
+      res.status(200).json(ResponseGenerator.success<AuthResponse.Session>("OK", response));
     } catch (error: unknown) {
       next(error);
     }
   }
 
   public async forgotPassword(
-    _req: Request,
-    _res: Response<ApiResponse<null>>,
-    _next: NextFunction,
-  ): Promise<void> {}
+    req: Request<{}, {}, AuthRequestBody.ForgotPassword>,
+    res: Response<ApiResponse<AuthResponse.ForgotPassword>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+      const result: AuthResponse.ForgotPassword = await this._authService.forgotPassword(email);
+      res.status(200).json(ResponseGenerator.success<AuthResponse.ForgotPassword>("OK", result));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {

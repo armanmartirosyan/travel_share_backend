@@ -121,6 +121,7 @@ class TestSetuper {
 
   public setupMailService(): void {
     jest.spyOn(MailService.prototype, "sendActivationMail").mockResolvedValue(undefined);
+    jest.spyOn(MailService.prototype, "sendForgotPasswordMail").mockResolvedValue(undefined);
   }
 
   public setupUserModel(): void {

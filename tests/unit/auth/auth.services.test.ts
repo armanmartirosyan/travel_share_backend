@@ -5,12 +5,13 @@ import {
   AUTH_LOGIN_EXCEPTION_CASES,
   AUTH_USER_ACTIVATE_EXCEPTION_CASES,
   AUTH_USER_REFRESH_EXCEPTION_CASES,
+  AUTH_FORGOT_PASSWORD_EXCEPTION_CASES,
 } from "./auth.service.cases";
 import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
 import { TokenService } from "../../../src/services/token.service";
-import type { AuthServiceResponse, AuthRequestBody } from "../../../src/types";
+import type { AuthResponse, AuthRequestBody } from "../../../src/types";
 
 jest.mock("node:timers/promises");
 jest.mock("../../../src/common/logger");
@@ -45,7 +46,7 @@ describe("AuthService", (): void => {
     it("registers a user successfully", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthServiceResponse = await authService.userRegistration(bodyBase);
+      const res: AuthResponse.UserAndToken = await authService.userRegistration(bodyBase);
 
       expect(res).toHaveProperty("user");
       expect(res).toHaveProperty("tokenPair");
@@ -82,7 +83,7 @@ describe("AuthService", (): void => {
     it("user login successfully with email", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthServiceResponse = await authService.userLogin(bodyBase, baseIp);
+      const res: AuthResponse.UserAndToken = await authService.userLogin(bodyBase, baseIp);
 
       expect(res).toHaveProperty("user");
       expect(res).toHaveProperty("tokenPair");
@@ -95,7 +96,7 @@ describe("AuthService", (): void => {
     it("user login successfully with username", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthServiceResponse = await authService.userLogin(
+      const res: AuthResponse.UserAndToken = await authService.userLogin(
         {
           login: "takenusername",
           password: "password",
@@ -172,7 +173,7 @@ describe("AuthService", (): void => {
     it("successfully refresh credentials", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthServiceResponse = await authService.userRefresh(refreshToken);
+      const res: AuthResponse.UserAndToken = await authService.userRefresh(refreshToken);
 
       expect(res).toHaveProperty("user");
       expect(res).toHaveProperty("tokenPair");
@@ -191,6 +192,49 @@ describe("AuthService", (): void => {
           await authService.userRefresh(body.refreshToken);
           fail("Should throw an error");
         } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
+
+  describe("forgotPasswrod", (): void => {
+    const commonEmail: string = "taken@example.com";
+
+    it("successfully send forgot password mail", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthResponse.ForgotPassword = await authService.forgotPassword(commonEmail);
+
+      expect(res).toHaveProperty("message");
+      expect(res.message).toBe("If an account with that email exists, a password reset link has been sent.");
+
+      expect(MailService.prototype.sendForgotPasswordMail).toHaveBeenCalledWith(
+        commonEmail,
+        expect.stringContaining("/api/user/reset-password/?token=mock-uuid"),
+      );
+    });
+
+    it("get common response", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthResponse.ForgotPassword = await authService.forgotPassword("notExistEmail@example.com");
+
+      expect(res).toHaveProperty("message");
+      expect(res.message).toBe("If an account with that email exists, a password reset link has been sent.");
+    });
+
+    test.each(AUTH_FORGOT_PASSWORD_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          await authService.forgotPassword(body.email);
+          fail("Should throw an error");
+        } catch (e: any) {
+          console.log(e);
           expect(e).toBeInstanceOf(instance);
           expect(e.message).toBe(message);
           expect(e.errors).toBe(errors);
