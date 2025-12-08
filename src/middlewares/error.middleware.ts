@@ -25,7 +25,7 @@ class ErrorMiddleware {
         res.status(400).json(ResponseGenerator.error("B400", { reason: error.message }));
         return;
       }
-      res.status(500).json(ResponseGenerator.error("INTERNAL_SERVER_ERROR"));
+      res.status(500).json(ResponseGenerator.error<null>("INTERNAL_SERVER_ERROR", null));
       ErrorMiddleware._logger.error("Unexpected error", error);
       return;
     }

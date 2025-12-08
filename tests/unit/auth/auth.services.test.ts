@@ -215,7 +215,7 @@ describe("AuthService", (): void => {
 
       expect(MailService.prototype.sendForgotPasswordMail).toHaveBeenCalledWith(
         commonEmail,
-        expect.stringContaining("/api/user/reset-password/?token=mock-uuid"),
+        expect.stringContaining("/api/user/reset-password/mock-uuid"),
       );
     });
 

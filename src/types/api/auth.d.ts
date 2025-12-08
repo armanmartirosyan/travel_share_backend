@@ -14,9 +14,15 @@ export namespace AuthRequestBody {
 
   type Login = { login: string; password: string };
 
+  type ForgotPassword = { email: string };
+
+  type ResetPassword = { password: string; passwordConfirm: string };
+}
+
+export namespace AuthParams {
   type Activate = { link: string };
 
-  type ForgotPassword = { email: string };
+  type ResetPassword = { token: string };
 }
 
 export namespace AuthResponse {

@@ -1,7 +1,7 @@
 import { APIError } from "../../../src/errors/api.error";
 import { TestSetuper } from "../tests.setuper";
 import type { ExceptionCases } from "./auth.service";
-import type { AuthRequestBody } from "../../../src/types";
+import type { AuthParams, AuthRequestBody } from "../../../src/types";
 
 const testSetuper = new TestSetuper();
 
@@ -75,10 +75,7 @@ const AUTH_LOGIN_EXCEPTION_CASES: ExceptionCases<AuthRequestBody.Login, typeof A
   },
 ];
 
-const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<
-  AuthRequestBody.Activate,
-  typeof APIError
-> = [
+const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<AuthParams.Activate, typeof APIError> = [
   {
     name: "invalid link should throw NoFound",
     body: { link: "invalid link" },

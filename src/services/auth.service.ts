@@ -33,16 +33,13 @@ class AuthService {
   ): Promise<AuthResponse.UserAndToken> {
     const { username, email, name, surname, password, passwordConfirm } = body;
     const isEmailExist: IUser | null = await User.findOne({ email });
-    if (isEmailExist) {
-      throw APIError.BadRequest("B400", "Email is already taken");
-    }
+    if (isEmailExist) throw APIError.BadRequest("B400", "Email is already taken");
+
     const isUsernameExist: IUser | null = await User.findOne({ username });
-    if (isUsernameExist) {
-      throw APIError.BadRequest("B400", "Username is already taken");
-    }
-    if (password != passwordConfirm) {
-      throw APIError.BadRequest("V400", "Passwrods do no match");
-    }
+    if (isUsernameExist) throw APIError.BadRequest("B400", "Username is already taken");
+
+    if (password != passwordConfirm) throw APIError.BadRequest("V400", "Passwrods do no match");
+
     const hashedPassword: string = await bcrypt.hash(password, 10);
     const user: IUser = new User({ email, username, name, surname, password: hashedPassword });
     const activationToken: IActivationToken = new ActivationToken({
@@ -158,20 +155,45 @@ class AuthService {
     const checkSendMail: string | null = await this._redis.get(`reset:mail:${email}`);
     if (checkSendMail) return commonResponse;
 
-    const isEmailExist: IUser | null = await User.findOne({ email });
-    if (!isEmailExist) return commonResponse;
+    const doesEmailExist: IUser | null = await User.findOne({ email });
+    if (!doesEmailExist) return commonResponse;
 
     const rawToken: string = uuidv4();
-    const hashedToken: string = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const hashedToken: string = this.sha256Hash(rawToken);
 
-    await this._redis.setEx(`reset:token:${hashedToken}`, isEmailExist._id.toString(), 900);
+    await this._redis.setEx(`reset:token:${hashedToken}`, doesEmailExist._id.toString(), 900);
     await this._redis.setEx(`reset:mail:${email}`, email, 900);
     await this._mailService.sendForgotPasswordMail(
       email,
-      `${this._env.CLIENT_URL}/api/user/reset-password/?token=${rawToken}`,
+      `${this._env.CLIENT_URL}/api/user/reset-password/${rawToken}`,
     );
 
     return commonResponse;
+  }
+
+  public async resetPassword(
+    token: string,
+    password: string,
+    passwordConfirm: string,
+  ): Promise<AuthResponse.ForgotPassword> {
+    const candidateId: string | null = await this._redis.get(`reset:token:${token}`);
+    if (!candidateId) throw APIError.NoFound("N404", "Invalid or expired reset token.");
+
+    if (password !== passwordConfirm) throw APIError.BadRequest("V400", "Passwrods do no match.");
+
+    const hashedPassword: string = await bcrypt.hash(password, 10);
+    const user: IUser | null = await User.findById(candidateId);
+    if (!user) throw APIError.NoFound("N404", "User not found.");
+
+    if (hashedPassword === user.password)
+      throw APIError.BadRequest("B400", "The password cannot be the same as the old one.");
+
+    user.password = hashedPassword;
+    await user.save();
+    await this._redis.del(`reset:token:${token}`);
+    return {
+      message: "Password has been reset successfully.",
+    };
   }
 
   private generateTokens(userID: string): TokenPair {
@@ -182,6 +204,10 @@ class AuthService {
       sub: userID,
     });
     return tokenPair;
+  }
+
+  private sha256Hash(string: string): string {
+    return crypto.createHash("sha256").update(string).digest("hex");
   }
 }
 

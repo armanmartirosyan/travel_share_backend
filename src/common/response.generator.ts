@@ -23,7 +23,7 @@ class ResponseGenerator {
     };
   }
 
-  static error<T>(code: keyof ResponseMapType, data?: T): ApiResponse<T> {
+  static error<T>(code: keyof ResponseMapType, data: T): ApiResponse<T> {
     return {
       success: false,
       message: this.RESPONSE_MAP[code],

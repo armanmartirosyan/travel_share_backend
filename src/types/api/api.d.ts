@@ -4,7 +4,7 @@ export type ApiResponse<T> = {
   success: boolean;
   message: string;
   code: string;
-  data?: T;
+  data: T;
 };
 
 export declare module "express" {

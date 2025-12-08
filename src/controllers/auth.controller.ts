@@ -3,7 +3,13 @@ import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
 import { AuthService } from "../services/auth.service.js";
-import type { ApiResponse, AuthResponse, AuthRequestBody, ValidatedEnv } from "../types/index.js";
+import type {
+  ApiResponse,
+  AuthResponse,
+  AuthRequestBody,
+  AuthParams,
+  ValidatedEnv,
+} from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
 
 class AuthController {
@@ -23,6 +29,7 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
+      this._logger.debug("asdfasdf");
       const result: AuthResponse.UserAndToken = await this._authService.userRegistration(req.body);
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
       const response: AuthResponse.Session = {
@@ -57,7 +64,7 @@ class AuthController {
 
   public async userLogout(
     req: Request,
-    res: Response<ApiResponse<AuthResponse.Session>>,
+    res: Response<ApiResponse<null>>,
     next: NextFunction,
   ): Promise<void> {
     try {
@@ -72,12 +79,12 @@ class AuthController {
   }
 
   public async userActivate(
-    req: Request<AuthRequestBody.Activate>,
+    req: Request<AuthParams.Activate>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { link }: Record<string, string> = req.params;
+      const { link } = req.params;
       await this._authService.userActivate(link);
       res.redirect(this._env.CLIENT_URL);
       return;
@@ -113,6 +120,25 @@ class AuthController {
     try {
       const { email } = req.body;
       const result: AuthResponse.ForgotPassword = await this._authService.forgotPassword(email);
+      res.status(200).json(ResponseGenerator.success<AuthResponse.ForgotPassword>("OK", result));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  public async resetPassword(
+    req: Request<AuthParams.ResetPassword, {}, AuthRequestBody.ResetPassword>,
+    res: Response<ApiResponse<AuthResponse.ForgotPassword>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { token } = req.params;
+      const { password, passwordConfirm } = req.body;
+      const result: AuthResponse.ForgotPassword = await this._authService.resetPassword(
+        token,
+        password,
+        passwordConfirm,
+      );
       res.status(200).json(ResponseGenerator.success<AuthResponse.ForgotPassword>("OK", result));
     } catch (error: unknown) {
       next(error);
