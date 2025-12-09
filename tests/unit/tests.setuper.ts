@@ -28,6 +28,13 @@ class TestSetuper {
       expire: jest.fn().mockResolvedValue(1),
       disconnect: jest.fn(),
     };
+    // this.bcrypt = {
+    //   hash: jest.fn().mockResolvedValue("hashed-password"),
+    //   compare: jest.fn().mockImplementation((password: string): boolean => {
+    //     if (password === "wrongPassword") return false;
+    //     return true;
+    //   }),
+    // }
   }
 
   public clearMocks(): void {
@@ -40,11 +47,18 @@ class TestSetuper {
   }
 
   public setupBcrypt(): void {
-    bcrypt.hash = jest.fn().mockResolvedValue("hashed-password");
+    // bcrypt.hash = jest.fn().mockResolvedValue("hashed-password");
+    bcrypt.hash = jest.fn().mockImplementation((password: string, _salt: number): string => {
+      if (password === "samePassword") return "hashedPassword";
+      return "hashed-password";
+    });
+
     bcrypt.compare = jest.fn().mockImplementation((password: string): boolean => {
       if (password === "wrongPassword") return false;
       return true;
     });
+    // jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+    // jest.spyOn(bcrypt, 'hash').mockResolvedValue('fakeHashedPassword');
   }
 
   public setupJwt(): void {

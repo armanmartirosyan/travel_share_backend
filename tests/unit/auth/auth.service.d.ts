@@ -1,6 +1,7 @@
-export type ExceptionCases<T, I> = Array<{
+export type ExceptionCases<T, I, Y> = Array<{
   name: string;
   body: T;
+  params: Y;
   message: string;
   setup: (() => void) | null;
   instance: I;

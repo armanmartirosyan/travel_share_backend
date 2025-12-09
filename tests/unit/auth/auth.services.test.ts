@@ -6,6 +6,7 @@ import {
   AUTH_USER_ACTIVATE_EXCEPTION_CASES,
   AUTH_USER_REFRESH_EXCEPTION_CASES,
   AUTH_FORGOT_PASSWORD_EXCEPTION_CASES,
+  AUTH_RESET_PASSWORD_EXCEPTION_CASES,
 } from "./auth.service.cases";
 import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
@@ -153,10 +154,10 @@ describe("AuthService", (): void => {
 
     test.each(AUTH_USER_ACTIVATE_EXCEPTION_CASES)(
       "$name",
-      async ({ body, message, instance, errors }) => {
+      async ({ params, message, instance, errors }) => {
         try {
           const authService = new AuthService();
-          await authService.userActivate(body.link);
+          await authService.userActivate(params.link);
           fail("Should throw an error");
         } catch (e: any) {
           expect(e).toBeInstanceOf(instance);
@@ -253,7 +254,45 @@ describe("AuthService", (): void => {
           await authService.forgotPassword(body.email);
           fail("Should throw an error");
         } catch (e: any) {
-          console.log(e);
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
+
+  describe("resetPassword", (): void => {
+    const commonToken: string = "commonToken";
+    const commonPassword: string = "commonPassword";
+    const commonConfirmPassowrd: string = "commonPassword";
+
+    it("successfully reset user password", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      testSetuper.redisService.get.mockResolvedValueOnce("taken@example.com");
+      const res: AuthResponse.ForgotPassword = await authService.resetPassword(
+        commonToken,
+        commonPassword,
+        commonConfirmPassowrd,
+      );
+
+      expect(res).toHaveProperty("message");
+      expect(res.message).toBe("Password has been reset successfully.");
+      expect(User.findById).toHaveBeenCalled();
+      expect(User.prototype.save).toHaveBeenCalled();
+      expect(bcrypt.hash).toHaveBeenCalledWith(commonPassword, 10);
+    });
+
+    test.each(AUTH_RESET_PASSWORD_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, params, setup, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          if (setup) setup();
+          await authService.resetPassword(params.token, body.password, body.passwordConfirm);
+          fail("Should throw an error");
+        } catch (e: any) {
           expect(e).toBeInstanceOf(instance);
           expect(e.message).toBe(message);
           expect(e.errors).toBe(errors);
