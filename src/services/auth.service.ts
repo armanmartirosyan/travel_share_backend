@@ -7,7 +7,7 @@ import { TokenService } from "./token.service.js";
 import { Env } from "../config/env.config.js";
 import { RedisService } from "../config/redis.config.js";
 import { APIError } from "../errors/api.error.js";
-import { User, ActivationToken } from "../models/index.model.js";
+import { User, ActivationToken, Follow } from "../models/index.model.js";
 import type { IUser, IActivationToken, ITokens } from "../models/index.model.js";
 import type { AuthResponse, AuthRequestBody, TokenPair, ValidatedEnv } from "../types/index.js";
 import type { JwtPayload } from "jsonwebtoken";
@@ -57,6 +57,10 @@ class AuthService {
     );
     return {
       user,
+      userInfo: {
+        followers: 0,
+        following: 0,
+      },
       tokenPair,
     };
   }
@@ -97,11 +101,17 @@ class AuthService {
     const tokenPair: TokenPair = this.generateTokens(user._id.toString());
 
     await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
-    await user.save();
     await this._redis.del(redisKey);
+    const followers: number = await Follow.countDocuments({ following: user._id });
+    const following: number = await Follow.countDocuments({ follower: user._id });
+
 
     return {
       user,
+      userInfo: {
+        followers,
+        following,
+      },
       tokenPair,
     };
   }
@@ -137,15 +147,21 @@ class AuthService {
 
     const tokenPair: TokenPair = this.generateTokens(user._id.toString());
     await this._tokenService.saveToken(user._id, tokenPair.refreshToken);
+    const followers: number = await Follow.countDocuments({ following: user._id });
+    const following: number = await Follow.countDocuments({ follower: user._id });
 
     return {
       user,
+      userInfo: {
+        followers,
+        following,
+      },
       tokenPair,
     };
   }
 
-  public async forgotPassword(email: string): Promise<AuthResponse.ForgotPassword> {
-    const commonResponse: AuthResponse.ForgotPassword = {
+  public async forgotPassword(email: string): Promise<AuthResponse.Message> {
+    const commonResponse: AuthResponse.Message = {
       message: "If an account with that email exists, a password reset link has been sent.",
     };
 
@@ -175,7 +191,7 @@ class AuthService {
     token: string,
     password: string,
     passwordConfirm: string,
-  ): Promise<AuthResponse.ForgotPassword> {
+  ): Promise<AuthResponse.Message> {
     const candidateId: string | null = await this._redis.get(`reset:token:${token}`);
     if (!candidateId) throw APIError.NoFound("N404", "Invalid or expired reset token.");
 
@@ -195,6 +211,12 @@ class AuthService {
       message: "Password has been reset successfully.",
     };
   }
+
+  // public async getFollowers(
+
+  // ): Promise<IUser[]> {
+
+  // }
 
   private generateTokens(userID: string): TokenPair {
     const tokenPair = this._tokenService.generateTokens({

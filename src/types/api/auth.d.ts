@@ -31,12 +31,18 @@ export namespace AuthResponse {
     accessToken: string;
   };
 
+  type UserInfo = {
+    followers: number;
+    following: number;
+  }
+
   type UserAndToken = {
     user: IUser;
+    userInfo: UserInfo;
     tokenPair: TokenPair;
   };
 
-  type ForgotPassword = {
+  type Message = {
     message: string;
   };
 }

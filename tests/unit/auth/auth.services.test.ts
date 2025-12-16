@@ -32,6 +32,7 @@ describe("AuthService", (): void => {
 
     testSetuper.setupActivationTokenModel();
     testSetuper.setupUserModel();
+    testSetuper.setupFollowModel();
   });
 
   describe("userRegistration", (): void => {
@@ -50,6 +51,7 @@ describe("AuthService", (): void => {
       const res: AuthResponse.UserAndToken = await authService.userRegistration(bodyBase);
 
       expect(res).toHaveProperty("user");
+      expect(res).toHaveProperty("userInfo");
       expect(res).toHaveProperty("tokenPair");
       expect(bcrypt.hash).toHaveBeenCalledWith("password", 10);
 
@@ -87,6 +89,7 @@ describe("AuthService", (): void => {
       const res: AuthResponse.UserAndToken = await authService.userLogin(bodyBase, baseIp);
 
       expect(res).toHaveProperty("user");
+      expect(res).toHaveProperty("userInfo");
       expect(res).toHaveProperty("tokenPair");
       expect(bcrypt.compare).toHaveBeenCalled();
 
@@ -207,7 +210,7 @@ describe("AuthService", (): void => {
     it("successfully send forgot password mail", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthResponse.ForgotPassword = await authService.forgotPassword(commonEmail);
+      const res: AuthResponse.Message = await authService.forgotPassword(commonEmail);
 
       expect(res).toHaveProperty("message");
       expect(res.message).toBe(
@@ -223,7 +226,7 @@ describe("AuthService", (): void => {
     it("email doesn't exist, get common response", async (): Promise<void> => {
       const authService = new AuthService();
 
-      const res: AuthResponse.ForgotPassword = await authService.forgotPassword(
+      const res: AuthResponse.Message = await authService.forgotPassword(
         "notExistEmail@example.com",
       );
 
@@ -237,7 +240,7 @@ describe("AuthService", (): void => {
       const authService = new AuthService();
 
       testSetuper.redisService.get.mockResolvedValueOnce("alreadySent@example.com");
-      const res: AuthResponse.ForgotPassword =
+      const res: AuthResponse.Message =
         await authService.forgotPassword("alreadySent@example.com");
 
       expect(res).toHaveProperty("message");
@@ -271,7 +274,7 @@ describe("AuthService", (): void => {
       const authService = new AuthService();
 
       testSetuper.redisService.get.mockResolvedValueOnce("taken@example.com");
-      const res: AuthResponse.ForgotPassword = await authService.resetPassword(
+      const res: AuthResponse.Message = await authService.resetPassword(
         commonToken,
         commonPassword,
         commonConfirmPassowrd,

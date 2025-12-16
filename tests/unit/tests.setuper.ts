@@ -4,12 +4,10 @@ import mongoose from "mongoose";
 import nodeMailer from "nodemailer";
 import { Env } from "../../src/config/env.config";
 import { RedisService } from "../../src/config/redis.config";
-import { ActivationToken } from "../../src/models/activation.model";
-import { Tokens } from "../../src/models/token.model";
-import { User } from "../../src/models/user.model";
+import { User, ActivationToken, Follow, Tokens } from "../../src/models/index.model";
 import { MailService } from "../../src/services/mail.service";
 import { TokenService } from "../../src/services/token.service";
-import type { ITokens } from "../../src/models/token.model";
+import type { ITokens } from "../../src/models/index.model";
 import type { ValidatedEnv } from "../../src/types";
 import type { JwtPayload } from "jsonwebtoken";
 
@@ -173,6 +171,22 @@ class TestSetuper {
     jest.spyOn(Tokens, "findOne").mockResolvedValue(mockTokens);
     jest.spyOn(Tokens, "findOneAndUpdate").mockResolvedValue(mockTokens);
     jest.spyOn(Tokens, "findOneAndDelete").mockResolvedValue(mockTokens);
+  }
+
+  public setupFollowModel(): void {
+    const mockFollow = new Follow({
+      userID: new mongoose.Types.ObjectId(),
+      refreshToken: "refreshToken",
+      expiresAt: new Date(),
+    });
+    // model saves
+    jest.spyOn(Follow.prototype, "save").mockResolvedValue(undefined);
+
+    // model find
+    jest.spyOn(Follow, "findOne").mockResolvedValue(mockFollow);
+    jest.spyOn(Follow, "findOneAndUpdate").mockResolvedValue(mockFollow);
+    jest.spyOn(Follow, "findOneAndDelete").mockResolvedValue(mockFollow);
+    jest.spyOn(Follow, "countDocuments").mockResolvedValue(Math.floor(100 * Math.random()));
   }
 
   public mockEnv(): ValidatedEnv {

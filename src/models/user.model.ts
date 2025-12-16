@@ -10,8 +10,6 @@ export interface IUser extends Document {
   password: string;
   isActive: boolean;
   profilePicture?: string;
-  followers: Types.ObjectId[];
-  following: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,18 +54,6 @@ const userSchema = new Schema<IUser>(
     profilePicture: {
       type: String,
     },
-    followers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "user",
-      },
-    ],
-    following: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "user",
-      },
-    ],
   },
   { timestamps: true },
 );

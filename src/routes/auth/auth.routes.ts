@@ -28,5 +28,12 @@ authRouter.post(
   Validator.commonBodyFields(["password", "passwordConfirm"]),
   authController.resetPassword.bind(authController),
 );
+// authRouter.get(
+//   "/followers"
+
+// )
+// authRouter.get(
+//   "/following"
+// )
 
 export { authRouter };

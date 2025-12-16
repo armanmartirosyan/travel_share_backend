@@ -29,11 +29,10 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      this._logger.debug("asdfasdf");
       const result: AuthResponse.UserAndToken = await this._authService.userRegistration(req.body);
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
       const response: AuthResponse.Session = {
-        user: new UserDTO(result.user),
+        user: new UserDTO(result.user, result.userInfo),
         accessToken: result.tokenPair.accessToken,
       };
       res.status(200).json(ResponseGenerator.success<AuthResponse.Session>("OK", response));
@@ -52,7 +51,7 @@ class AuthController {
       const result: AuthResponse.UserAndToken = await this._authService.userLogin(req.body, req.ip);
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
       const response: AuthResponse.Session = {
-        user: new UserDTO(result.user),
+        user: new UserDTO(result.user, result.userInfo),
         accessToken: result.tokenPair.accessToken,
       };
       res.status(200).json(ResponseGenerator.success<AuthResponse.Session>("OK", response));
@@ -102,7 +101,7 @@ class AuthController {
       const { refreshToken } = req.cookies;
       const result: AuthResponse.UserAndToken = await this._authService.userRefresh(refreshToken);
       const response: AuthResponse.Session = {
-        user: new UserDTO(result.user),
+        user: new UserDTO(result.user, result.userInfo),
         accessToken: result.tokenPair.accessToken,
       };
       this.setRefreshCookie(res, result.tokenPair.refreshToken);
@@ -114,13 +113,13 @@ class AuthController {
 
   public async forgotPassword(
     req: Request<{}, {}, AuthRequestBody.ForgotPassword>,
-    res: Response<ApiResponse<AuthResponse.ForgotPassword>>,
+    res: Response<ApiResponse<AuthResponse.Message>>,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { email } = req.body;
-      const result: AuthResponse.ForgotPassword = await this._authService.forgotPassword(email);
-      res.status(200).json(ResponseGenerator.success<AuthResponse.ForgotPassword>("OK", result));
+      const result: AuthResponse.Message = await this._authService.forgotPassword(email);
+      res.status(200).json(ResponseGenerator.success<AuthResponse.Message>("OK", result));
     } catch (error: unknown) {
       next(error);
     }
@@ -128,22 +127,35 @@ class AuthController {
 
   public async resetPassword(
     req: Request<AuthParams.ResetPassword, {}, AuthRequestBody.ResetPassword>,
-    res: Response<ApiResponse<AuthResponse.ForgotPassword>>,
+    res: Response<ApiResponse<AuthResponse.Message>>,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { token } = req.params;
       const { password, passwordConfirm } = req.body;
-      const result: AuthResponse.ForgotPassword = await this._authService.resetPassword(
+      const result: AuthResponse.Message = await this._authService.resetPassword(
         token,
         password,
         passwordConfirm,
       );
-      res.status(200).json(ResponseGenerator.success<AuthResponse.ForgotPassword>("OK", result));
+      res.status(200).json(ResponseGenerator.success<AuthResponse.Message>("OK", result));
     } catch (error: unknown) {
       next(error);
     }
   }
+
+  // public async getFollowers(
+  //   req: Request,
+  //   res: Response<ApiResponse<any>>,
+  //   next: NextFunction,
+  // ): Promise<void> {
+  //   try {
+  //     const result = await this._authService.resetPassword();
+  //     res.status(200).json(ResponseGenerator.success("OK", result));
+  //   } catch (error: unknown) {
+  //     next(error);
+  //   }
+  // }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {
