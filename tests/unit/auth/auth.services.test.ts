@@ -240,8 +240,7 @@ describe("AuthService", (): void => {
       const authService = new AuthService();
 
       testSetuper.redisService.get.mockResolvedValueOnce("alreadySent@example.com");
-      const res: AuthResponse.Message =
-        await authService.forgotPassword("alreadySent@example.com");
+      const res: AuthResponse.Message = await authService.forgotPassword("alreadySent@example.com");
 
       expect(res).toHaveProperty("message");
       expect(res.message).toBe(

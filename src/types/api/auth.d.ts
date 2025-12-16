@@ -34,7 +34,7 @@ export namespace AuthResponse {
   type UserInfo = {
     followers: number;
     following: number;
-  }
+  };
 
   type UserAndToken = {
     user: IUser;

@@ -105,7 +105,6 @@ class AuthService {
     const followers: number = await Follow.countDocuments({ following: user._id });
     const following: number = await Follow.countDocuments({ follower: user._id });
 
-
     return {
       user,
       userInfo: {
