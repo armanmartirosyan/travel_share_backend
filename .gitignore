@@ -4,3 +4,4 @@ node_modules/
 coverage_reports/
 dist/
 logs/
+uploads/

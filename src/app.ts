@@ -59,6 +59,7 @@ class App {
     );
     this._app.use(this.configureDumper());
     this._app.use("/api", mainRouter);
+    this._app.use(express.static(this._env.UPLOAD_PATH));
     this._app.use(ErrorMiddleware.ErrorHandler());
   }
 

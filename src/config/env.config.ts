@@ -15,7 +15,7 @@ class Env {
     return Env._instance;
   }
 
-  get env(): ValidatedEnv {
+  public get env(): ValidatedEnv {
     return this._env;
   }
 
@@ -45,6 +45,7 @@ class Env {
         "SMTP_PASSWORD",
         "API_URL",
         "MAIL_SERVICE_STATUS",
+        "UPLOAD_PATH",
       ],
     };
     const env: ValidatedEnv = {} as ValidatedEnv;
@@ -71,6 +72,7 @@ class Env {
     this._logger.info(".env file loaded successfully");
     env.ISDEV = process.env.NODE_ENV !== "production";
     env.MAIL_SERVICE = process.env.MAIL_SERVICE_STATUS === "enable";
+    env.UPLOAD_PATH = path.join(process.cwd(), env.UPLOAD_PATH);
     return env;
   }
 }

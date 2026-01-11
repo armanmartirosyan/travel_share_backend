@@ -144,6 +144,27 @@ class AuthController {
     }
   }
 
+  public async uploadProfilePicture(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: "No file uploaded" });
+        return;
+      }
+      this._logger.debug(req.file);
+      res.json({
+        success: true,
+        avatarUrl: `/uploads/${req.file.filename}`,
+      });
+      return;
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // public async getFollowers(
   //   req: Request,
   //   res: Response<ApiResponse<any>>,

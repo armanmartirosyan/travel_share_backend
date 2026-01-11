@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { AuthController } from "../../controllers/auth.controller.js";
 import { Validator } from "../../middlewares/validator.midlleware.js";
+import { Multer } from "../../common/multer.js";
 
 const authRouter: Router = Router();
 const authController = new AuthController();
+const multer = Multer.instance;
 
 authRouter.post(
   "/registration",
@@ -27,6 +29,11 @@ authRouter.post(
   "/reset-password/:token",
   Validator.commonBodyFields(["password", "passwordConfirm"]),
   authController.resetPassword.bind(authController),
+);
+authRouter.post(
+  "/upload/profile",
+  multer.upload.single("file"),
+  authController.uploadProfilePicture.bind(authController),
 );
 // authRouter.get(
 //   "/followers"

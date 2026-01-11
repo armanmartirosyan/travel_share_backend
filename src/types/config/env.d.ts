@@ -21,4 +21,5 @@ export type ValidatedEnv = {
   API_URL: string;
   MAIL_SERVICE_STATUS: string;
   MAIL_SERVICE: boolean;
+  UPLOAD_PATH: string;
 };

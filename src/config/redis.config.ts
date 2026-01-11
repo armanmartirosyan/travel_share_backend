@@ -4,7 +4,7 @@ import { Logger } from "../common/logger.js";
 import type { RedisKey, RedisValue } from "ioredis";
 
 class RedisService {
-  static _instance: RedisService;
+  private static _instance: RedisService;
 
   private _client: Redis;
   private readonly _connectionUri: string;
@@ -25,7 +25,7 @@ class RedisService {
     this._client.on("close", (): void => this._logger.info("Disconnected from Redis"));
   }
 
-  static get instance(): RedisService {
+  public static get instance(): RedisService {
     if (!RedisService._instance) RedisService._instance = new RedisService();
     return RedisService._instance;
   }
