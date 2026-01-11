@@ -61,6 +61,6 @@
     "url": "git+https://github.com/armanmartirosyan/travel_share_backend.git"
   },
   "engines": {
-    "node": "24.8.0"
+    "node": ">=24.8.0"
   }
 }
