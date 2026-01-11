@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { Multer } from "../../common/multer.js";
 import { AuthController } from "../../controllers/auth.controller.js";
 import { Validator } from "../../middlewares/validator.midlleware.js";
-import { Multer } from "../../common/multer.js";
 
 const authRouter: Router = Router();
 const authController = new AuthController();
