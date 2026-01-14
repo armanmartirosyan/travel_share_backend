@@ -8,7 +8,8 @@ class Validator {
 
       Validator.checkBodyExisting(req);
       for (const field of fields) {
-        if (req.body[field] === undefined || req.body[field] === null) missingFields.push(field);
+        if (req.body[field] === undefined || req.body[field] === null)
+          missingFields.push(`Missing field ${field}`);
       }
 
       if (missingFields.length > 0) throw APIError.BadRequest("M400", missingFields);
