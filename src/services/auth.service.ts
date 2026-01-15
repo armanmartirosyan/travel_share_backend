@@ -211,6 +211,21 @@ class AuthService {
     };
   }
 
+  public async uploadProfilePicture(
+    userId: string,
+    filename: string,
+  ): Promise<AuthResponse.UploadProfilePicture> {
+    const user: IUser | null = await User.findById(userId);
+
+    if (!user) throw APIError.NoFound("N404", "User not found.");
+
+    user.profilePicture = filename;
+    await user.save();
+    return {
+      filename,
+    };
+  }
+
   // public async getFollowers(
 
   // ): Promise<IUser[]> {

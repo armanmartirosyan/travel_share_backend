@@ -10,17 +10,23 @@ export type CBDestination = { (error: Error | null, destination: string): void }
 export type CBFileName = { (error: Error | null, filename: string): void };
 
 class Multer {
+  private readonly PROFILE_UPLOAD_PATH: string;
+  private readonly POSTS_UPLOAD_PATH: string;
+
   private static _instance: Multer;
   private static _uploadPath: string = Env.instance.env.UPLOAD_PATH;
 
   private _upload: MulterType;
 
   private constructor(defaultPath: string) {
+    this.POSTS_UPLOAD_PATH = path.join(defaultPath, "posts");
+    this.PROFILE_UPLOAD_PATH = path.join(defaultPath, "profile");
+
     const storage: StorageEngine = multer.diskStorage({
       destination: (req: Request, _file: Express.Multer.File, cb: CBDestination): void => {
         let dest: string = defaultPath;
-        if (req.path.endsWith("/upload/profile")) dest = path.join(defaultPath, "profile");
-        else if (req.path.endsWith("/posts/create")) dest = path.join(defaultPath, "posts");
+        if (req.path.endsWith("/upload/profile")) dest = this.PROFILE_UPLOAD_PATH;
+        else if (req.path.endsWith("/posts/create")) dest = this.POSTS_UPLOAD_PATH;
 
         if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
         cb(null, dest);
@@ -37,7 +43,15 @@ class Multer {
     return Multer._instance;
   }
 
-  get upload(): MulterType {
+  public get ProfileUploadPath(): string {
+    return this.PROFILE_UPLOAD_PATH;
+  }
+
+  public get PostsUploadPath(): string {
+    return this.POSTS_UPLOAD_PATH;
+  }
+
+  public get upload(): MulterType {
     return this._upload;
   }
 

@@ -2,6 +2,7 @@ import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
+import { APIError } from "../errors/api.error.js";
 import { AuthService } from "../services/auth.service.js";
 import type {
   ApiResponse,
@@ -11,6 +12,7 @@ import type {
   ValidatedEnv,
 } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
+import type { JwtPayload } from "jsonwebtoken";
 
 class AuthController {
   private readonly _authService: AuthService;
@@ -154,11 +156,13 @@ class AuthController {
         res.status(400).json({ success: false, message: "No file uploaded" });
         return;
       }
-      this._logger.debug(req.file);
-      res.json({
-        success: true,
-        avatarUrl: `/uploads/${req.file.filename}`,
-      });
+      const user: JwtPayload = req.user!;
+      if (!user.sub) throw APIError.UnauthorizedError();
+      const response: AuthResponse.UploadProfilePicture =
+        await this._authService.uploadProfilePicture(user.sub, req.file.filename);
+      res
+        .status(201)
+        .json(ResponseGenerator.success<AuthResponse.UploadProfilePicture>("OK", response));
       return;
     } catch (error: unknown) {
       next(error);

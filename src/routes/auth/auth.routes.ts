@@ -1,6 +1,7 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import { Multer } from "../../common/multer.js";
 import { AuthController } from "../../controllers/auth.controller.js";
+import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 import { Validator } from "../../middlewares/validator.midlleware.js";
 
 const authRouter: Router = Router();
@@ -32,6 +33,7 @@ authRouter.post(
 );
 authRouter.post(
   "/upload/profile",
+  AuthMiddleware.authHandler(),
   multer.upload.single("file"),
   authController.uploadProfilePicture.bind(authController),
 );
@@ -42,5 +44,7 @@ authRouter.post(
 // authRouter.get(
 //   "/following"
 // )
+
+authRouter.use("/profile", express.static(multer.ProfileUploadPath));
 
 export { authRouter };

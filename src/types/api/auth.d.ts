@@ -45,4 +45,8 @@ export namespace AuthResponse {
   type Message = {
     message: string;
   };
+
+  type UploadProfilePicture = {
+    filename: string;
+  };
 }
