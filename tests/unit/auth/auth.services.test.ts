@@ -7,6 +7,7 @@ import {
   AUTH_USER_REFRESH_EXCEPTION_CASES,
   AUTH_FORGOT_PASSWORD_EXCEPTION_CASES,
   AUTH_RESET_PASSWORD_EXCEPTION_CASES,
+  AUTH_UPLOAD_PICTURE_EXCEPTION_CASES,
 } from "./auth.service.cases";
 import { User } from "../../../src/models/user.model";
 import { AuthService } from "../../../src/services/auth.service";
@@ -293,6 +294,42 @@ describe("AuthService", (): void => {
           const authService = new AuthService();
           if (setup) setup();
           await authService.resetPassword(params.token, body.password, body.passwordConfirm);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
+
+  describe("uploadProfilePicture", (): void => {
+    const commonUserId: string = "commonUserId";
+    const commonFilename: string = "commonFilename.png";
+
+    it("successfully upload profile picture", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      testSetuper.redisService.get.mockResolvedValueOnce("taken@example.com");
+      const res: AuthResponse.UploadProfilePicture = await authService.uploadProfilePicture(
+        commonUserId,
+        commonFilename,
+      );
+
+      expect(res).toHaveProperty("filename");
+      expect(res.filename).toBe(commonFilename);
+      expect(User.findById).toHaveBeenCalled();
+      expect(User.prototype.save).toHaveBeenCalled();
+    });
+
+    test.each(AUTH_UPLOAD_PICTURE_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, setup, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          if (setup) setup();
+          await authService.uploadProfilePicture(body.userId, body.file);
           fail("Should throw an error");
         } catch (e: any) {
           expect(e).toBeInstanceOf(instance);

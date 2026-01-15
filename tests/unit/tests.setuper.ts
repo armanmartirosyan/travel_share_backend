@@ -208,6 +208,7 @@ class TestSetuper {
       API_URL: "http://127.0.0.1:8080/",
       MAIL_SERVICE_STATUS: "disable",
       MAIL_SERVICE: true,
+      UPLOAD_PATH: "./uploads/",
     };
   }
 }
