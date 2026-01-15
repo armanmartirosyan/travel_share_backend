@@ -2,7 +2,6 @@ import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
-import { APIError } from "../errors/api.error.js";
 import { AuthService } from "../services/auth.service.js";
 import type {
   ApiResponse,
@@ -148,22 +147,16 @@ class AuthController {
 
   public async uploadProfilePicture(
     req: Request,
-    res: Response,
+    res: Response<ApiResponse<AuthResponse.UploadProfilePicture>>,
     next: NextFunction,
   ): Promise<void> {
     try {
-      if (!req.file) {
-        res.status(400).json({ success: false, message: "No file uploaded" });
-        return;
-      }
       const user: JwtPayload = req.user!;
-      if (!user.sub) throw APIError.UnauthorizedError();
       const response: AuthResponse.UploadProfilePicture =
-        await this._authService.uploadProfilePicture(user.sub, req.file.filename);
+        await this._authService.uploadProfilePicture(user.sub, req.file?.filename);
       res
         .status(201)
         .json(ResponseGenerator.success<AuthResponse.UploadProfilePicture>("OK", response));
-      return;
     } catch (error: unknown) {
       next(error);
     }

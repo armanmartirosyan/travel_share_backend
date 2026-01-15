@@ -212,11 +212,13 @@ class AuthService {
   }
 
   public async uploadProfilePicture(
-    userId: string,
-    filename: string,
+    userId: string | undefined,
+    filename: string | undefined,
   ): Promise<AuthResponse.UploadProfilePicture> {
-    const user: IUser | null = await User.findById(userId);
+    if (!filename) throw APIError.BadRequest("B400", "No file uploaded.");
+    if (!userId) throw APIError.UnauthorizedError();
 
+    const user: IUser | null = await User.findById(userId);
     if (!user) throw APIError.NoFound("N404", "User not found.");
 
     user.profilePicture = filename;
