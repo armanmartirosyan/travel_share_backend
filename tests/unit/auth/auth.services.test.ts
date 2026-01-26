@@ -8,11 +8,13 @@ import {
   AUTH_FORGOT_PASSWORD_EXCEPTION_CASES,
   AUTH_RESET_PASSWORD_EXCEPTION_CASES,
   AUTH_UPLOAD_PICTURE_EXCEPTION_CASES,
+  AUTH_UPDATE_EXCEPTION_CASES,
 } from "./auth.service.cases";
-import { User } from "../../../src/models/user.model";
+import { User } from "../../../src/models/index.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
 import { TokenService } from "../../../src/services/token.service";
+import type { IUser } from "../../../src/models/index.model";
 import type { AuthResponse, AuthRequestBody } from "../../../src/types";
 
 jest.mock("node:timers/promises");
@@ -330,6 +332,60 @@ describe("AuthService", (): void => {
           const authService = new AuthService();
           if (setup) setup();
           await authService.uploadProfilePicture(body.userId, body.file);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
+
+  describe("updateUser", (): void => {
+    const commonUserId: string = "commonUserId";
+
+    it("successfully update user", async (): Promise<void> => {
+      const authService = new AuthService();
+      const userFormData: AuthRequestBody.UpdateUser = {
+        username: "username",
+        email: "email",
+        name: "name",
+        surname: "surname",
+        currentPassword: "currentPassword",
+        newPassword: "newPassword",
+        confirmPassword: "newPassword",
+      };
+
+      const res: IUser = await authService.updateUser(commonUserId, userFormData);
+
+      expect(res).toBeInstanceOf(User);
+      expect(User.findById).toHaveBeenCalledWith(commonUserId);
+      expect(User.findOne).toHaveBeenCalledTimes(2);
+      expect(bcrypt.compare).toHaveBeenCalled();
+      expect(bcrypt.hash).toHaveBeenCalledWith("newPassword", 10);
+      expect(User.prototype.save).toHaveBeenCalled();
+    });
+
+    it("successfully update user with empty body", async (): Promise<void> => {
+      const authService = new AuthService();
+      const userFormData: AuthRequestBody.UpdateUser = {};
+
+      const res: IUser = await authService.updateUser(commonUserId, userFormData);
+
+      expect(res).toBeInstanceOf(User);
+      expect(User.findById).toHaveBeenCalledWith(commonUserId);
+      expect(User.findOne).toHaveBeenCalledTimes(2);
+      expect(User.prototype.save).toHaveBeenCalled();
+    });
+
+    test.each(AUTH_UPDATE_EXCEPTION_CASES)(
+      "$name",
+      async ({ body, setup, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          if (setup) setup();
+          await authService.updateUser(body.userId, body);
           fail("Should throw an error");
         } catch (e: any) {
           expect(e).toBeInstanceOf(instance);

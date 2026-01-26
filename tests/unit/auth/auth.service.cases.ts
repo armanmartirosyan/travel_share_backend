@@ -243,6 +243,65 @@ const AUTH_UPLOAD_PICTURE_EXCEPTION_CASES: ExceptionCases<
   },
 ];
 
+const AUTH_UPDATE_EXCEPTION_CASES: ExceptionCases<
+  { userId?: string } & AuthRequestBody.UpdateUser,
+  typeof APIError,
+  null
+> = [
+  {
+    name: "no user id",
+    body: {},
+    message: "User is not authorized.",
+    params: null,
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "no user with given id",
+    body: { userId: "noUser" },
+    message: "User is not authorized.",
+    params: null,
+    setup: null,
+    instance: APIError,
+    errors: undefined,
+  },
+  {
+    name: "username is taken",
+    body: { userId: "User", username: "takenusername" },
+    message: "Bad Request",
+    params: null,
+    setup: null,
+    instance: APIError,
+    errors: "Username is already taken",
+  },
+  {
+    name: "email is taken",
+    body: { userId: "User", username: "username", email: "taken@example.com" },
+    message: "Bad Request",
+    params: null,
+    setup: null,
+    instance: APIError,
+    errors: "Email is already taken",
+  },
+  {
+    name: "passwords do not match",
+    body: {
+      userId: "User",
+      username: "username",
+      email: "example@example.com",
+      currentPassword: "password",
+      newPassword: "newPassword",
+      confirmPassword: "confirmPassword",
+    },
+    message: "Bad Request",
+    params: null,
+    setup: null,
+    instance: APIError,
+    errors: "Passwords do not match",
+  },
+];
+
 export {
   testSetuper,
   AUTH_REG_EXCEPTION_CASES,
@@ -252,4 +311,5 @@ export {
   AUTH_FORGOT_PASSWORD_EXCEPTION_CASES,
   AUTH_RESET_PASSWORD_EXCEPTION_CASES,
   AUTH_UPLOAD_PICTURE_EXCEPTION_CASES,
+  AUTH_UPDATE_EXCEPTION_CASES,
 };

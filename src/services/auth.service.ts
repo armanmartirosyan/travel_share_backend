@@ -248,7 +248,7 @@ class AuthService {
       const passwordMatch: boolean = await bcrypt.compare(currentPassword, user.password);
 
       if (!passwordMatch || newPassword !== confirmPassword)
-        throw APIError.BadRequest("V400", "Passwrods do no match");
+        throw APIError.BadRequest("V400", "Passwords do not match");
 
       user.password = await bcrypt.hash(newPassword, 10);
     }
