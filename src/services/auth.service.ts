@@ -32,11 +32,11 @@ class AuthService {
     body: AuthRequestBody.Registration,
   ): Promise<AuthResponse.UserAndToken> {
     const { username, email, name, surname, password, passwordConfirm } = body;
-    const isEmailExist: IUser | null = await User.findOne({ email });
-    if (isEmailExist) throw APIError.BadRequest("B400", "Email is already taken");
+    const doesEmailExist: IUser | null = await User.findOne({ email });
+    if (doesEmailExist) throw APIError.BadRequest("B400", "Email is already taken");
 
-    const isUsernameExist: IUser | null = await User.findOne({ username });
-    if (isUsernameExist) throw APIError.BadRequest("B400", "Username is already taken");
+    const doesUsernameExist: IUser | null = await User.findOne({ username });
+    if (doesUsernameExist) throw APIError.BadRequest("B400", "Username is already taken");
 
     if (password != passwordConfirm) throw APIError.BadRequest("V400", "Passwrods do no match");
 
@@ -228,11 +228,49 @@ class AuthService {
     };
   }
 
-  // public async getFollowers(
+  public async updateUser(
+    userId: string | undefined,
+    userFormData: AuthRequestBody.UpdateUser,
+  ): Promise<IUser> {
+    if (!userId) throw APIError.UnauthorizedError();
+    const user: IUser | null = await User.findById(userId);
+    if (!user) throw APIError.UnauthorizedError();
 
-  // ): Promise<IUser[]> {
+    const { username, name, surname, email, currentPassword, newPassword, confirmPassword } =
+      userFormData;
+    const doesUsernameExist: IUser | null = await User.findOne({ username });
+    if (doesUsernameExist) throw APIError.BadRequest("B400", "Username is already taken");
 
-  // }
+    const doesEmailExist: IUser | null = await User.findOne({ email });
+    if (doesEmailExist) throw APIError.BadRequest("B400", "Email is already taken");
+
+    if (currentPassword && newPassword && confirmPassword) {
+      const passwordMatch: boolean = await bcrypt.compare(currentPassword, user.password);
+
+      if (!passwordMatch || newPassword !== confirmPassword)
+        throw APIError.BadRequest("V400", "Passwrods do no match");
+
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+    if (username) user.username = username;
+    if (name) user.name = name;
+    if (surname) user.surname = surname;
+    if (email && user.email !== email) {
+      user.email = email;
+      user.isActive = false;
+      const activationToken: IActivationToken = new ActivationToken({
+        activationToken: uuidv4(),
+        userId: user.id,
+      });
+      await activationToken.save();
+      await this._mailService.sendActivationMail(
+        email,
+        `${this._env.API_URL}/api/user/activate/${activationToken.activationToken}`,
+      );
+    }
+    await user.save();
+    return user;
+  }
 
   private generateTokens(userID: string): TokenPair {
     const tokenPair = this._tokenService.generateTokens({

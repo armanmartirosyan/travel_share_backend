@@ -37,13 +37,11 @@ authRouter.post(
   multer.upload.single("file"),
   authController.uploadProfilePicture.bind(authController),
 );
-// authRouter.get(
-//   "/followers"
-
-// )
-// authRouter.get(
-//   "/following"
-// )
+authRouter.patch(
+  "/update",
+  AuthMiddleware.authHandler(),
+  authController.updateUser.bind(authController),
+);
 
 authRouter.use("/profile", express.static(multer.ProfileUploadPath));
 

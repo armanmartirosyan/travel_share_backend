@@ -17,7 +17,6 @@ const ActivationTokenSchema: Schema<IActivationToken> = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    unique: true,
   },
   expireAt: {
     type: Date,

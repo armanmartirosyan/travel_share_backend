@@ -17,6 +17,16 @@ export namespace AuthRequestBody {
   type ForgotPassword = { email: string };
 
   type ResetPassword = { password: string; passwordConfirm: string };
+
+  type UpdateUser = {
+    username?: string;
+    email?: string;
+    name?: string;
+    surname?: string;
+    currentPassword?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+  };
 }
 
 export namespace AuthParams {

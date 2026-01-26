@@ -3,6 +3,7 @@ import { ResponseGenerator } from "../common/response.generator.js";
 import { Env } from "../config/env.config.js";
 import { UserDTO } from "../dto/user.dto.js";
 import { AuthService } from "../services/auth.service.js";
+import type { IUser } from "../models/user.model.js";
 import type {
   ApiResponse,
   AuthResponse,
@@ -162,18 +163,20 @@ class AuthController {
     }
   }
 
-  // public async getFollowers(
-  //   req: Request,
-  //   res: Response<ApiResponse<any>>,
-  //   next: NextFunction,
-  // ): Promise<void> {
-  //   try {
-  //     const result = await this._authService.resetPassword();
-  //     res.status(200).json(ResponseGenerator.success("OK", result));
-  //   } catch (error: unknown) {
-  //     next(error);
-  //   }
-  // }
+  public async updateUser(
+    req: Request<{}, {}, AuthRequestBody.UpdateUser>,
+    res: Response<ApiResponse<UserDTO>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const user: JwtPayload = req.user!;
+      const response: IUser = await this._authService.updateUser(user.sub, req.body);
+      const userDto: UserDTO = new UserDTO(response);
+      res.status(201).json(ResponseGenerator.success<UserDTO>("OK", userDto));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 
   private setRefreshCookie(res: Response, refreshToken: string): void {
     res.cookie("refreshToken", refreshToken, {
