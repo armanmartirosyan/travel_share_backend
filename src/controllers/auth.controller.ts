@@ -187,7 +187,7 @@ class AuthController {
       const { id } = req.params;
       const response: AuthResponse.User = await this._authService.getUser(id);
       const userDto: UserDTO = new UserDTO(response.user, response.userInfo);
-      res.status(201).json(ResponseGenerator.success<UserDTO>("OK", userDto));
+      res.status(200).json(ResponseGenerator.success<UserDTO>("OK", userDto));
     } catch (error: unknown) {
       next(error);
     }
