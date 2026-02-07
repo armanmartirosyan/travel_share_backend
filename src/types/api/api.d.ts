@@ -7,8 +7,14 @@ export type ApiResponse<T> = {
   data: T;
 };
 
+export type Pagination = {
+  page: string;
+  limit: string;
+  sort?: string;
+};
+
 export declare module "express" {
   export interface Request {
-    user?: JwtPayload;
+    payload?: JwtPayload;
   }
 }

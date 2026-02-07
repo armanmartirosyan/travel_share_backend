@@ -20,7 +20,7 @@ export default {
     },
   },
   modulePaths: ["<rootDir>/src"],
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: ["<rootDir>/src/services/*.ts"],
   coverageDirectory: "./tests/coverage_reports",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],

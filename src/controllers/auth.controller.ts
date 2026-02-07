@@ -152,9 +152,9 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const user: JwtPayload = req.user!;
+      const payload: JwtPayload = req.payload!;
       const response: AuthResponse.UploadProfilePicture =
-        await this._authService.uploadProfilePicture(user.sub, req.file?.filename);
+        await this._authService.uploadProfilePicture(payload.sub, req.file?.filename);
       res
         .status(201)
         .json(ResponseGenerator.success<AuthResponse.UploadProfilePicture>("OK", response));
@@ -169,9 +169,24 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const user: JwtPayload = req.user!;
-      const response: IUser = await this._authService.updateUser(user.sub, req.body);
+      const payload: JwtPayload = req.payload!;
+      const response: IUser = await this._authService.updateUser(payload.sub, req.body);
       const userDto: UserDTO = new UserDTO(response);
+      res.status(201).json(ResponseGenerator.success<UserDTO>("OK", userDto));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  public async getUser(
+    req: Request<AuthParams.UserID>,
+    res: Response<ApiResponse<UserDTO>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const response: AuthResponse.User = await this._authService.getUser(id);
+      const userDto: UserDTO = new UserDTO(response.user, response.userInfo);
       res.status(201).json(ResponseGenerator.success<UserDTO>("OK", userDto));
     } catch (error: unknown) {
       next(error);

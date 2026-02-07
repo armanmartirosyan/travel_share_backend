@@ -91,7 +91,7 @@ const AUTH_USER_ACTIVATE_EXCEPTION_CASES: ExceptionCases<
   AuthParams.Activate
 > = [
   {
-    name: "invalid link should throw NoFound",
+    name: "invalid link should throw NotFound",
     body: null,
     params: { link: "invalid link" },
     message: "Not Found",

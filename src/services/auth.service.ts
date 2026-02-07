@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { setTimeout } from "node:timers/promises";
 import bcrypt from "bcryptjs";
+import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import { MailService } from "./mail.service.js";
 import { TokenService } from "./token.service.js";
@@ -124,7 +125,7 @@ class AuthService {
     const userToken: IActivationToken | null = await ActivationToken.findOne({
       activationToken: link,
     });
-    if (!userToken) throw APIError.NoFound("N404", "Invalid activation link");
+    if (!userToken) throw APIError.NotFound("N404", "Invalid activation link");
 
     const user: IUser | null = await User.findById(userToken.userId);
     if (!user) throw APIError.InternalServerError("Contact support for assistance");
@@ -192,13 +193,13 @@ class AuthService {
     passwordConfirm: string,
   ): Promise<AuthResponse.Message> {
     const candidateId: string | null = await this._redis.get(`reset:token:${token}`);
-    if (!candidateId) throw APIError.NoFound("N404", "Invalid or expired reset token.");
+    if (!candidateId) throw APIError.NotFound("N404", "Invalid or expired reset token.");
 
     if (password !== passwordConfirm) throw APIError.BadRequest("V400", "Passwrods do no match.");
 
     const hashedPassword: string = await bcrypt.hash(password, 10);
     const user: IUser | null = await User.findById(candidateId);
-    if (!user) throw APIError.NoFound("N404", "User not found.");
+    if (!user) throw APIError.NotFound("N404", "User not found.");
 
     if (hashedPassword === user.password)
       throw APIError.BadRequest("B400", "The password cannot be the same as the old one.");
@@ -219,7 +220,7 @@ class AuthService {
     if (!userId) throw APIError.UnauthorizedError();
 
     const user: IUser | null = await User.findById(userId);
-    if (!user) throw APIError.NoFound("N404", "User not found.");
+    if (!user) throw APIError.NotFound("N404", "User not found.");
 
     user.profilePicture = filename;
     await user.save();
@@ -270,6 +271,22 @@ class AuthService {
     }
     await user.save();
     return user;
+  }
+
+  public async getUser(id: string): Promise<AuthResponse.User> {
+    if (!Types.ObjectId.isValid(id)) throw APIError.NotFound("N404", "User not found.");
+    const user: IUser | null = await User.findById(id);
+    if (!user) throw APIError.NotFound("N404", "User not found.");
+
+    const followers: number = await Follow.countDocuments({ following: user._id });
+    const following: number = await Follow.countDocuments({ follower: user._id });
+    return {
+      user,
+      userInfo: {
+        followers,
+        following,
+      },
+    };
   }
 
   private generateTokens(userID: string): TokenPair {

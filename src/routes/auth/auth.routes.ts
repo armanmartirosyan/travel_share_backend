@@ -10,12 +10,12 @@ const multer = Multer.instance;
 
 authRouter.post(
   "/registration",
-  Validator.commonBodyFields(["email", "username", "password", "passwordConfirm"]),
+  Validator.body(["email", "username", "password", "passwordConfirm"]),
   authController.userRegistration.bind(authController),
 );
 authRouter.post(
   "/login",
-  Validator.commonBodyFields(["login", "password"]),
+  Validator.body(["login", "password"]),
   authController.userLogin.bind(authController),
 );
 authRouter.post("/logout", authController.userLogout.bind(authController));
@@ -23,12 +23,12 @@ authRouter.get("/activate/:link", authController.userActivate.bind(authControlle
 authRouter.get("/refresh", authController.userRefresh.bind(authController));
 authRouter.post(
   "/forgot-password",
-  Validator.commonBodyFields(["email"]),
+  Validator.body(["email"]),
   authController.forgotPassword.bind(authController),
 );
 authRouter.post(
   "/reset-password/:token",
-  Validator.commonBodyFields(["password", "passwordConfirm"]),
+  Validator.body(["password", "passwordConfirm"]),
   authController.resetPassword.bind(authController),
 );
 authRouter.post(
@@ -42,6 +42,7 @@ authRouter.patch(
   AuthMiddleware.authHandler(),
   authController.updateUser.bind(authController),
 );
+authRouter.get("/:id", authController.getUser.bind(authController));
 
 authRouter.use("/profile", express.static(multer.ProfileUploadPath));
 

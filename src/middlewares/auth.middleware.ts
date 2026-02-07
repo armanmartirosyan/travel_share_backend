@@ -22,7 +22,7 @@ class AuthMiddleware {
       const accessToken: string = splitToken[1];
       const user: JwtPayload = AuthMiddleware._tokenService.verifyToken(accessToken);
 
-      Object.defineProperty(req, "user", {
+      Object.defineProperty(req, "payload", {
         value: user,
         writable: false,
         enumerable: true,

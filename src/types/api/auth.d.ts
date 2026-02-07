@@ -33,6 +33,8 @@ export namespace AuthParams {
   type Activate = { link: string };
 
   type ResetPassword = { token: string };
+
+  type UserID = { id: string };
 }
 
 export namespace AuthResponse {
@@ -46,10 +48,13 @@ export namespace AuthResponse {
     following: number;
   };
 
-  type UserAndToken = {
+  type UserAndToken = User & {
+    tokenPair: TokenPair;
+  };
+
+  type User = {
     user: IUser;
     userInfo: UserInfo;
-    tokenPair: TokenPair;
   };
 
   type Message = {

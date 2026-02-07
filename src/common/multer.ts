@@ -26,7 +26,7 @@ class Multer {
       destination: (req: Request, _file: Express.Multer.File, cb: CBDestination): void => {
         let dest: string = defaultPath;
         if (req.path.endsWith("/upload/profile")) dest = this.PROFILE_UPLOAD_PATH;
-        else if (req.path.endsWith("/posts/create")) dest = this.POSTS_UPLOAD_PATH;
+        else if (req.path.endsWith("/create")) dest = this.POSTS_UPLOAD_PATH;
 
         if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
         cb(null, dest);
@@ -54,10 +54,6 @@ class Multer {
   public get upload(): MulterType {
     return this._upload;
   }
-
-  // public configure(): void {
-
-  // }
 }
 
 export { Multer };
