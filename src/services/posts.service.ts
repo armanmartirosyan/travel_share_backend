@@ -1,5 +1,4 @@
 import { Types } from "mongoose";
-import { v4 as uuidv4 } from "uuid";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
 import { Post } from "../models/index.model.js";
@@ -19,7 +18,7 @@ class PostsService {
     files: PT.Files,
   ): Promise<void> {
     if (!userId || !Types.ObjectId.isValid(userId)) throw APIError.UnauthorizedError();
-    if (!files) throw APIError.BadRequest("V400", "Missing media files.");
+    if (!files || files.length === 0) throw APIError.BadRequest("V400", "Missing media files.");
     if (!Array.isArray(files)) throw APIError.BadRequest("V400", "Invalid files format.");
     if (files.length > 5) throw APIError.BadRequest("V400", "Post can have at most 5 media items");
     if (description.length > 2000) throw APIError.BadRequest("V400", "Description too long");
@@ -27,7 +26,7 @@ class PostsService {
     const media: PT.Media[] = [];
 
     for (const file of files) {
-      media.push({ type: this.getMediaType(file), url: uuidv4() });
+      media.push({ type: this.getMediaType(file), url: file.filename });
     }
 
     const post: IPost = new Post({
@@ -42,6 +41,7 @@ class PostsService {
     pageString: string,
     limitString: string,
     sort: string = "new",
+    userId?: string,
   ): Promise<PostsResponse.GetPosts> {
     const sortQueryList = new Map<string, Record<string, 1 | -1>>([
       ["new", { createdAt: -1 }],
@@ -57,10 +57,13 @@ class PostsService {
     if (!sortQuery) sortQuery = sortQueryList.get("new");
 
     const skip: number = (page - 1) * limit;
+    const filter: { userId?: string } = {};
+
+    if (userId) filter.userId = userId;
 
     const [posts, total] = await Promise.all([
-      Post.find().sort(sortQuery).skip(skip).limit(limit).lean(),
-      Post.countDocuments(),
+      Post.find(filter).sort(sortQuery).skip(skip).limit(limit).lean(),
+      Post.countDocuments(filter),
     ]);
 
     return {

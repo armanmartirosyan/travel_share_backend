@@ -8,7 +8,7 @@ import { DatabaseService } from "./config/database.config.js";
 import { Env } from "./config/env.config.js";
 import { RedisService } from "./config/redis.config.js";
 import { ErrorMiddleware } from "./middlewares/error.middleware.js";
-import { mainRouter } from "./routes/index.js";
+import { mainRouter } from "./routes/index.routes.js";
 import type { ValidatedEnv } from "./types/index.js";
 import type { RequestHandler, Express, Request, Response, NextFunction } from "express";
 
