@@ -1,7 +1,12 @@
-import type { IPost } from "../../models/index.model.ts";
 export namespace PostRequestBody {
   type Create = {
     description: string;
+  };
+}
+
+export namespace PostsParams {
+  type PostId = {
+    id: string;
   };
 }
 
@@ -17,11 +22,17 @@ export namespace PostsTypes {
     type: string;
     url: string;
   };
+
+  type PaginationInfo = {
+    user_id?: string;
+    feed_type?: FeedType;
+  };
+  type FeedType = "all" | "following";
 }
 
 export namespace PostsResponse {
-  type GetPosts = {
-    posts: IPost[];
+  type GetPosts<T> = {
+    posts: T;
     meta: {
       totalPosts: number;
       currentPage: number;

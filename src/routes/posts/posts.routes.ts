@@ -17,8 +17,14 @@ postRouter.post(
 );
 postRouter.get(
   "/",
+  AuthMiddleware.authHandler(true),
   Validator.query(["page", "limit"]),
   postController.getPosts.bind(postController),
+);
+postRouter.delete(
+  "/:id",
+  AuthMiddleware.authHandler(),
+  postController.deletePost.bind(postController),
 );
 
 postRouter.use("/media", express.static(multer.PostsUploadPath));

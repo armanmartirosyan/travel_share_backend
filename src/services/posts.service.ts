@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
-import { Post } from "../models/index.model.js";
-import type { IPost } from "../models/index.model.js";
+import { Post, Follow } from "../models/index.model.js";
+import type { IFollow, IPost } from "../models/index.model.js";
 import type { PostsTypes as PT, PostsResponse, ValidatedEnv } from "../types/index.js";
 
 class PostsService {
@@ -16,7 +16,7 @@ class PostsService {
     userId: string | undefined,
     description: string,
     files: PT.Files,
-  ): Promise<void> {
+  ): Promise<IPost> {
     if (!userId || !Types.ObjectId.isValid(userId)) throw APIError.UnauthorizedError();
     if (!files || files.length === 0) throw APIError.BadRequest("V400", "Missing media files.");
     if (!Array.isArray(files)) throw APIError.BadRequest("V400", "Invalid files format.");
@@ -35,14 +35,17 @@ class PostsService {
       media,
     });
     await post.save();
+    return post;
   }
 
   public async getPosts(
     pageString: string,
     limitString: string,
     sort: string = "new",
+    currentUserId?: string,
     userId?: string,
-  ): Promise<PostsResponse.GetPosts> {
+    feedType: PT.FeedType = "all",
+  ): Promise<PostsResponse.GetPosts<IPost[]>> {
     const sortQueryList = new Map<string, Record<string, 1 | -1>>([
       ["new", { createdAt: -1 }],
       ["most_like", { likeCount: -1 }],
@@ -57,9 +60,27 @@ class PostsService {
     if (!sortQuery) sortQuery = sortQueryList.get("new");
 
     const skip: number = (page - 1) * limit;
-    const filter: { userId?: string } = {};
+    const filter: { userId?: any } = {};
 
-    if (userId) filter.userId = userId;
+    if (userId) {
+      filter.userId = userId;
+    } else if (feedType === "following" && currentUserId) {
+      if (!Types.ObjectId.isValid(currentUserId)) throw APIError.UnauthorizedError();
+
+      const followingUsers: IFollow[] | null = await Follow.find({
+        follower: new Types.ObjectId(currentUserId),
+      })
+        .select("following")
+        .lean();
+
+      const followingUserIds: Types.ObjectId[] = followingUsers.map(
+        (f: IFollow): Types.ObjectId => f.following,
+      );
+
+      // followingUserIds.push(new Types.ObjectId(currentUserId));
+
+      filter.userId = { $in: followingUserIds };
+    }
 
     const [posts, total] = await Promise.all([
       Post.find(filter).sort(sortQuery).skip(skip).limit(limit).lean(),
@@ -75,6 +96,14 @@ class PostsService {
         hasNextPage: page * limit < total,
       },
     };
+  }
+
+  public async deletePost(id: string, userId: string | undefined): Promise<void> {
+    if (!userId) throw APIError.UnauthorizedError();
+    if (!Types.ObjectId.isValid(id)) throw APIError.BadRequest("B400", "Not valid Id");
+    const post: IPost | null = await Post.findOne({ _id: id, userId });
+    if (!post) throw APIError.UnauthorizedError();
+    await post.deleteOne();
   }
 
   private getMediaType(file: Express.Multer.File): "image" | "video" | "unknown" {

@@ -11,10 +11,13 @@ class AuthMiddleware {
   private static _env: ValidatedEnv = Env.instance.env;
   private static _tokenService: TokenService = new TokenService();
 
-  public static authHandler(): RequestHandler {
+  public static authHandler(optional: boolean = false): RequestHandler {
     function handler(req: Request, _res: Response, next: NextFunction): void {
       const authHeader: string | undefined = req.headers.authorization;
-      if (!authHeader) throw APIError.UnauthorizedError();
+      if (!authHeader) {
+        if (optional) next();
+        throw APIError.UnauthorizedError();
+      }
 
       const splitToken: string[] = authHeader.split(" ");
       if (splitToken[0] !== "Bearer") throw APIError.UnauthorizedError();
