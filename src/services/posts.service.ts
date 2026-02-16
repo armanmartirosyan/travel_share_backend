@@ -102,7 +102,7 @@ class PostsService {
     if (!userId) throw APIError.UnauthorizedError();
     if (!Types.ObjectId.isValid(id)) throw APIError.BadRequest("B400", "Not valid Id");
     const post: IPost | null = await Post.findOne({ _id: id, userId });
-    if (!post) throw APIError.UnauthorizedError();
+    if (!post) return;
     await post.deleteOne();
   }
 
