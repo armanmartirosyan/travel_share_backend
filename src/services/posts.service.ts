@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
-import { Post, Follow } from "../models/index.model.js";
+import { Post, Follow, User } from "../models/index.model.js";
 import type { IFollow, IPost } from "../models/index.model.js";
 import type { PostsTypes as PT, PostsResponse, ValidatedEnv } from "../types/index.js";
 
@@ -23,6 +23,10 @@ class PostsService {
     if (files.length > 5) throw APIError.BadRequest("V400", "Post can have at most 5 media items");
     if (description.length > 2000) throw APIError.BadRequest("V400", "Description too long");
 
+    const userObjectId = new Types.ObjectId(userId);
+    const user = await User.findById(userObjectId).select("_id username profilePicture");
+    if (!user) throw APIError.NotFound("N404", "User not found");
+
     const media: PT.Media[] = [];
 
     for (const file of files) {
@@ -30,11 +34,13 @@ class PostsService {
     }
 
     const post: IPost = new Post({
-      userId: new Types.ObjectId(userId),
+      user: userObjectId,
       description,
       media,
     });
     await post.save();
+
+    await post.populate("user", "_id username profilePicture");
     return post;
   }
 
@@ -83,7 +89,12 @@ class PostsService {
     }
 
     const [posts, total] = await Promise.all([
-      Post.find(filter).sort(sortQuery).skip(skip).limit(limit).lean(),
+      Post.find(filter)
+        .populate("user", "_id username profilePicture")
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       Post.countDocuments(filter),
     ]);
 
@@ -102,7 +113,7 @@ class PostsService {
     if (!userId) throw APIError.UnauthorizedError();
     if (!Types.ObjectId.isValid(id)) throw APIError.BadRequest("B400", "Not valid Id");
     const post: IPost | null = await Post.findOne({ _id: id, userId });
-    if (!post) return;
+    if (!post) throw APIError.UnauthorizedError();
     await post.deleteOne();
   }
 

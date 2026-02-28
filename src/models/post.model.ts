@@ -3,9 +3,15 @@ import { MediaSchema } from "./media.model.js";
 import type { IMedia } from "./media.model.js";
 import type { Types, Document, Model } from "mongoose";
 
+export interface IPostUser {
+  _id: Types.ObjectId;
+  username: string;
+  profilePicture?: string;
+}
+
 export interface IPost extends Document {
   _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  user: IPostUser;
   description?: string;
   media: IMedia[];
   likeCount: number;
@@ -16,7 +22,7 @@ export interface IPost extends Document {
 
 const PostSchema: Schema<IPost> = new Schema<IPost>(
   {
-    userId: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
