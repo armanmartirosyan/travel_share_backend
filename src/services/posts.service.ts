@@ -66,10 +66,10 @@ class PostsService {
     if (!sortQuery) sortQuery = sortQueryList.get("new");
 
     const skip: number = (page - 1) * limit;
-    const filter: { userId?: any } = {};
+    const filter: { user?: any } = {};
 
     if (userId) {
-      filter.userId = userId;
+      filter.user = userId;
     } else if (feedType === "following" && currentUserId) {
       if (!Types.ObjectId.isValid(currentUserId)) throw APIError.UnauthorizedError();
 
@@ -85,7 +85,7 @@ class PostsService {
 
       // followingUserIds.push(new Types.ObjectId(currentUserId));
 
-      filter.userId = { $in: followingUserIds };
+      filter.user = { $in: followingUserIds };
     }
 
     const [posts, total] = await Promise.all([
