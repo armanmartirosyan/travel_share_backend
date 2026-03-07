@@ -22,7 +22,8 @@ class CommentService {
     if (!Types.ObjectId.isValid(postId)) throw APIError.BadRequest("V400", "Not valid post id.");
     let parentComment: IComment | null = null;
     if (parentId) {
-      if (!Types.ObjectId.isValid(parentId)) throw APIError.BadRequest("V400", "Not valid parent id.");
+      if (!Types.ObjectId.isValid(parentId))
+        throw APIError.BadRequest("V400", "Not valid parent id.");
       parentComment = await Comment.findById(parentId);
       if (!parentComment) throw APIError.BadRequest("V400", "Not valid parent id.");
     }

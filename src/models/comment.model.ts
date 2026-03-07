@@ -48,11 +48,13 @@ const CommentSchema: Schema<IComment> = new Schema(
       type: Number,
       default: 0,
     },
-    replies: [{
-      type: Schema.Types.ObjectId,
-      ref: "Comments",
-      default: [],
-    }],
+    replies: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Comments",
+        default: [],
+      },
+    ],
   },
   { timestamps: true },
 );
