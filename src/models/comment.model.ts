@@ -1,13 +1,15 @@
 import mongoose, { Schema } from "mongoose";
 import type { Types, Document, Model } from "mongoose";
 
-interface IComment extends Document {
+export interface IComment extends Document {
   _id: Types.ObjectId;
   postId: Types.ObjectId;
   userId: Types.ObjectId;
+  parentId?: Types.ObjectId; // Reference to parent comment (null for top-level comments)
   content: string;
   likeCount: number;
   dislikeCount: number;
+  replies: Types.ObjectId[]; // Array of child comment IDs
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +28,12 @@ const CommentSchema: Schema<IComment> = new Schema(
       required: true,
       index: true,
     },
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Comments",
+      default: null,
+      index: true,
+    },
     content: {
       type: String,
       required: true,
@@ -40,6 +48,11 @@ const CommentSchema: Schema<IComment> = new Schema(
       type: Number,
       default: 0,
     },
+    replies: [{
+      type: Schema.Types.ObjectId,
+      ref: "Comments",
+      default: [],
+    }],
   },
   { timestamps: true },
 );
