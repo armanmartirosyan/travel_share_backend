@@ -112,7 +112,7 @@ class PostsService {
   public async deletePost(id: string, userId: string | undefined): Promise<void> {
     if (!userId) throw APIError.UnauthorizedError();
     if (!Types.ObjectId.isValid(id)) throw APIError.BadRequest("B400", "Not valid Id");
-    const post: IPost | null = await Post.findOne({ _id: id, userId });
+    const post: IPost | null = await Post.findOne({ _id: id, user: userId });
     if (!post) throw APIError.UnauthorizedError();
     await post.deleteOne();
   }
