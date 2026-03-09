@@ -9,6 +9,7 @@ class PostDTO {
   likeCount: number;
   dislikeCount: number;
   createdAt: Date;
+  userReaction?: "like" | "dislike" | null;
 
   constructor(model: IPost) {
     this._id = model._id.toString();
@@ -18,6 +19,7 @@ class PostDTO {
     this.likeCount = model.likeCount;
     this.dislikeCount = model.dislikeCount;
     this.createdAt = model.createdAt;
+    this.userReaction = model.userReaction;
   }
 }
 

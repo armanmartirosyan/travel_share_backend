@@ -80,6 +80,21 @@ class PostsController {
     }
   }
 
+  public async getPostById(
+    req: Request<PostsParams.PostId>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const currentUserId: string | undefined = req.payload?.sub;
+      const response: IPost = await this._postService.getPostById(id, currentUserId);
+      res.status(200).json(ResponseGenerator.success<PostDTO>("OK", new PostDTO(response)));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   public async deletePost(
     req: Request<PostsParams.PostId>,
     res: Response,

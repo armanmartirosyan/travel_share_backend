@@ -18,6 +18,7 @@ export interface IPost extends Document {
   dislikeCount: number;
   createdAt: Date;
   updatedAt: Date;
+  userReaction?: "like" | "dislike" | null;
 }
 
 const PostSchema: Schema<IPost> = new Schema<IPost>(

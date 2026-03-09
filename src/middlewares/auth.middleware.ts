@@ -15,7 +15,10 @@ class AuthMiddleware {
     function handler(req: Request, _res: Response, next: NextFunction): void {
       const authHeader: string | undefined = req.headers.authorization;
       if (!authHeader) {
-        if (optional) next();
+        if (optional) {
+          next();
+          return;
+        }
         throw APIError.UnauthorizedError();
       }
 

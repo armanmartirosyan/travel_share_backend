@@ -2,7 +2,9 @@ import { Types } from "mongoose";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
 import { Post, Follow, User } from "../models/index.model.js";
+import { ReactionModel } from "../models/reaction.model.js";
 import type { IFollow, IPost } from "../models/index.model.js";
+import type { IReaction } from "../models/reaction.model.js";
 import type { PostsTypes as PT, PostsResponse, ValidatedEnv } from "../types/index.js";
 
 class PostsService {
@@ -98,6 +100,23 @@ class PostsService {
       Post.countDocuments(filter),
     ]);
 
+    const userReactions: Map<string, "like" | "dislike" | null> = new Map();
+    if (currentUserId && Types.ObjectId.isValid(currentUserId)) {
+      const postIds: Types.ObjectId[] = posts.map((post: IPost): Types.ObjectId => post._id);
+      const reactions: IReaction[] = await ReactionModel.find({
+        userId: new Types.ObjectId(currentUserId),
+        targetId: { $in: postIds },
+        targetType: "Post",
+      })
+        .select("targetId type")
+        .lean();
+
+      reactions.forEach((reaction: IReaction): void => {
+        userReactions.set(reaction.targetId.toString(), reaction.type);
+      });
+    }
+    for (const post of posts) post.userReaction = userReactions.get(post._id.toString()) || null;
+
     return {
       posts,
       meta: {
@@ -107,6 +126,24 @@ class PostsService {
         hasNextPage: page * limit < total,
       },
     };
+  }
+
+  public async getPostById(id: string, currentUserId?: string): Promise<IPost> {
+    if (!Types.ObjectId.isValid(id)) throw APIError.BadRequest("B400", "Not valid Id");
+    const post: IPost | null = await Post.findById(id).populate(
+      "user",
+      "_id username profilePicture",
+    );
+    if (currentUserId && Types.ObjectId.isValid(currentUserId) && post) {
+      const reaction: IReaction | null = await ReactionModel.findOne({
+        userId: new Types.ObjectId(currentUserId),
+        targetId: post._id,
+        targetType: "Post",
+      }).select("type");
+      post.userReaction = reaction ? reaction.type : null;
+    }
+    if (!post) throw APIError.NotFound("N404", "Post not found");
+    return post;
   }
 
   public async deletePost(id: string, userId: string | undefined): Promise<void> {
