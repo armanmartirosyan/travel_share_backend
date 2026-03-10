@@ -28,7 +28,7 @@ class Validator {
           missingFields.push(`Missing query param ${field}`);
       }
 
-      if (missingFields.length > 0) throw APIError.BadRequest("V400", missingFields);
+      if (missingFields.length > 0) throw APIError.BadRequest("M400", missingFields);
 
       next();
     }

@@ -2,6 +2,10 @@ export namespace PostRequestBody {
   type Create = {
     description: string;
   };
+
+  type React = {
+    type: "like" | "dislike";
+  };
 }
 
 export namespace PostsParams {

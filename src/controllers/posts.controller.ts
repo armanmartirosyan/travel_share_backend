@@ -108,6 +108,22 @@ class PostsController {
       next(error);
     }
   }
+
+  public async reactToPost(
+    req: Request<PostsParams.PostId, {}, PostRequestBody.React>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const type: PostRequestBody.React["type"] = req.body.type;
+      const { id } = req.params;
+      const userId: string | undefined = req.payload!.sub;
+      await this._postService.reactToPost(id, userId, type);
+      res.sendStatus(204);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
 
 export { PostsController };

@@ -2,9 +2,9 @@ import { Types } from "mongoose";
 import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
 import { Post, Follow, User } from "../models/index.model.js";
-import { ReactionModel } from "../models/reaction.model.js";
+import { PostReactionModel } from "../models/post.reaction.model.js";
 import type { IFollow, IPost } from "../models/index.model.js";
-import type { IReaction } from "../models/reaction.model.js";
+import type { IPostReaction, PostReactionType } from "../models/post.reaction.model.js";
 import type { PostsTypes as PT, PostsResponse, ValidatedEnv } from "../types/index.js";
 
 class PostsService {
@@ -103,15 +103,14 @@ class PostsService {
     const userReactions: Map<string, "like" | "dislike" | null> = new Map();
     if (currentUserId && Types.ObjectId.isValid(currentUserId)) {
       const postIds: Types.ObjectId[] = posts.map((post: IPost): Types.ObjectId => post._id);
-      const reactions: IReaction[] = await ReactionModel.find({
+      const reactions: IPostReaction[] = await PostReactionModel.find({
         userId: new Types.ObjectId(currentUserId),
         targetId: { $in: postIds },
-        targetType: "Post",
       })
         .select("targetId type")
         .lean();
 
-      reactions.forEach((reaction: IReaction): void => {
+      reactions.forEach((reaction: IPostReaction): void => {
         userReactions.set(reaction.targetId.toString(), reaction.type);
       });
     }
@@ -135,10 +134,9 @@ class PostsService {
       "_id username profilePicture",
     );
     if (currentUserId && Types.ObjectId.isValid(currentUserId) && post) {
-      const reaction: IReaction | null = await ReactionModel.findOne({
+      const reaction: IPostReaction | null = await PostReactionModel.findOne({
         userId: new Types.ObjectId(currentUserId),
         targetId: post._id,
-        targetType: "Post",
       }).select("type");
       post.userReaction = reaction ? reaction.type : null;
     }
@@ -152,6 +150,52 @@ class PostsService {
     const post: IPost | null = await Post.findOne({ _id: id, user: userId });
     if (!post) throw APIError.UnauthorizedError();
     await post.deleteOne();
+  }
+
+  public async reactToPost(
+    postId: string,
+    userId: string | undefined,
+    type: PostReactionType,
+  ): Promise<void> {
+    if (type !== "like" && type !== "dislike")
+      throw APIError.BadRequest("V400", "Invalid reaction type");
+    if (!userId) throw APIError.UnauthorizedError();
+    if (!Types.ObjectId.isValid(postId)) throw APIError.BadRequest("B400", "Not valid Id");
+
+    const post: IPost | null = await Post.findById(postId);
+    if (!post) throw APIError.NotFound("N404", "Post not found");
+
+    const existingReaction: IPostReaction | null = await PostReactionModel.findOne({
+      userId: new Types.ObjectId(userId),
+      targetId: post._id,
+    });
+
+    if (existingReaction) {
+      if (existingReaction.type === type) {
+        // Remove reaction
+        await existingReaction.deleteOne();
+        post.likeCount += type === "like" ? -1 : 0;
+        post.dislikeCount += type === "dislike" ? -1 : 0;
+      } else {
+        // Change reaction
+        existingReaction.type = type;
+        await existingReaction.save();
+        post.likeCount += type === "like" ? 1 : -1;
+        post.dislikeCount += type === "dislike" ? 1 : -1;
+      }
+    } else {
+      // Add new reaction
+      const newReaction = new PostReactionModel({
+        userId: new Types.ObjectId(userId),
+        targetId: post._id,
+        type,
+      });
+      await newReaction.save();
+      post.likeCount += type === "like" ? 1 : 0;
+      post.dislikeCount += type === "dislike" ? 1 : 0;
+    }
+
+    await post.save();
   }
 
   private getMediaType(file: Express.Multer.File): "image" | "video" | "unknown" {
