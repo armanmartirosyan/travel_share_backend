@@ -31,6 +31,7 @@ export namespace PostsTypes {
     user_id?: string;
     feed_type?: FeedType;
   };
+
   type FeedType = "all" | "following";
 }
 

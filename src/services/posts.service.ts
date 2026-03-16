@@ -64,7 +64,7 @@ class PostsService {
 
     if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1)
       throw APIError.BadRequest("V400", "Invalid pagination parameters.");
-    let sortQuery = sortQueryList.get(sort);
+    let sortQuery: Record<string, 1 | -1> | undefined = sortQueryList.get(sort);
     if (!sortQuery) sortQuery = sortQueryList.get("new");
 
     const skip: number = (page - 1) * limit;

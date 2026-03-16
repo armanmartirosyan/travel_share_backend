@@ -1,9 +1,10 @@
+import type { ICommentUser } from "../models/comment.model.js";
 import type { IComment } from "../models/index.model.js";
 
 class CommentDTO {
   _id: string;
   postId: string;
-  userId: string;
+  user: ICommentUser;
   parentId?: string;
   content: string;
   likeCount: number;
@@ -14,7 +15,7 @@ class CommentDTO {
   constructor(model: IComment) {
     this._id = model._id.toString();
     this.postId = model.postId.toString();
-    this.userId = model.userId.toString();
+    this.user = model.user;
     this.parentId = model.parentId?.toString();
     this.content = model.content;
     this.likeCount = model.likeCount;

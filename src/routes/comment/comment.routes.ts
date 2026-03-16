@@ -10,18 +10,24 @@ commentRouter.post(
   "/create",
   Validator.body(["postId", "content"]),
   AuthMiddleware.authHandler(),
-  commentController.createPost.bind(commentController),
+  commentController.createComment.bind(commentController),
 );
-// commentRouter.get(
-//   "/",
-//   AuthMiddleware.authHandler(true),
-//   Validator.query(["page", "limit"]),
-//   commentController.getPosts.bind(commentController),
-// );
-// commentRouter.delete(
-//   "/:id",
-//   AuthMiddleware.authHandler(),
-//   commentController.deletePost.bind(commentController),
-// );
+commentRouter.get(
+  "/:postId",
+  AuthMiddleware.authHandler(true),
+  Validator.query(["page", "limit"]),
+  commentController.getComments.bind(commentController),
+);
+commentRouter.post(
+  "/:id/react",
+  AuthMiddleware.authHandler(),
+  Validator.body(["type"]),
+  commentController.reactToComment.bind(commentController),
+);
+commentRouter.delete(
+  "/:id",
+  AuthMiddleware.authHandler(),
+  commentController.deletePost.bind(commentController),
+);
 
 export { commentRouter };
