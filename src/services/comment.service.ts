@@ -3,7 +3,7 @@ import { Env } from "../config/env.config.js";
 import { APIError } from "../errors/api.error.js";
 import { CommentReactionModel } from "../models/comment.reaction.model.js";
 import { Comment } from "../models/index.model.js";
-import type { CommentReactionType , ICommentReaction } from "../models/comment.reaction.model.js";
+import type { CommentReactionType, ICommentReaction } from "../models/comment.reaction.model.js";
 import type { IComment } from "../models/index.model.js";
 import type { CommentsResponse } from "../types/api/comment.js";
 import type { ValidatedEnv } from "../types/index.js";
