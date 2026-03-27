@@ -18,7 +18,7 @@ export interface IComment extends Document {
   replies: Types.ObjectId[]; // Array of child comment IDs
   createdAt: Date;
   updatedAt: Date;
-  userReaction?: "like" | "dislike" | null;
+  userReaction: "like" | "dislike" | null;
 }
 
 const CommentSchema: Schema<IComment> = new Schema(

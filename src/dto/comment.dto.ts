@@ -10,6 +10,7 @@ class CommentDTO {
   likeCount: number;
   dislikeCount: number;
   replies: number;
+  userReaction: "like" | "dislike" | null;
   createdAt: Date;
 
   constructor(model: IComment) {
@@ -21,6 +22,7 @@ class CommentDTO {
     this.likeCount = model.likeCount;
     this.dislikeCount = model.dislikeCount;
     this.replies = model.replies.length;
+    this.userReaction = model.userReaction;
     this.createdAt = model.createdAt;
   }
 }

@@ -87,7 +87,6 @@ class CommentService {
     ]);
 
     const userReactions: Map<string, "like" | "dislike" | null> = new Map();
-    console.log("Comments", comments);
     if (currentUserId && Types.ObjectId.isValid(currentUserId)) {
       const commentIds: string[] = comments.map((c: IComment): string => c._id.toString());
       const reactions: ICommentReaction[] = await CommentReactionModel.find({
