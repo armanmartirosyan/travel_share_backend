@@ -32,10 +32,14 @@ class FollowService {
   }
 
   public async deleteFollow(followingId: string, userId: string | undefined): Promise<void> {
-    if (!followingId || !Types.ObjectId.isValid(followingId)) throw APIError.BadRequest("M400", "Valid follow id is required.");
+    if (!followingId || !Types.ObjectId.isValid(followingId))
+      throw APIError.BadRequest("M400", "Valid follow id is required.");
     if (!userId || !Types.ObjectId.isValid(userId)) throw APIError.UnauthorizedError();
 
-    const follow: IFollow | null = await Follow.findOne({ follower: userId, following: followingId });
+    const follow: IFollow | null = await Follow.findOne({
+      follower: userId,
+      following: followingId,
+    });
     if (!follow) return;
     await follow.deleteOne();
   }
