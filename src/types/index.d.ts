@@ -6,6 +6,7 @@ import type { TokenPair } from "./api/token.js";
 import type { ColorType, MethodMapType } from "./common/logger.js";
 import type { ResponseMapType } from "./common/response.js";
 import type { EnvList, ValidatedEnv } from "./config/env.js";
+import type { FollowParams, FollowResponse } from "../types/api/follow.js";
 
 export type {
   ApiResponse,
@@ -15,6 +16,8 @@ export type {
   CommentRequestBody,
   CommentQueryParams,
   CommentParams,
+  FollowParams,
+  FollowResponse,
   EnvList,
   MethodMapType,
   ResponseMapType,
