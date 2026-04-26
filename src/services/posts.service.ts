@@ -71,12 +71,15 @@ class PostsService {
     const filter: { user?: any } = {};
 
     if (userId) {
+      if (!Types.ObjectId.isValid(userId)) throw APIError.BadRequest("V400", "Invalid user id.");
       filter.user = userId;
-    } else if (feedType === "following" && currentUserId) {
-      if (!Types.ObjectId.isValid(currentUserId)) throw APIError.UnauthorizedError();
+    } else if (feedType === "following") {
+      if (!currentUserId || !Types.ObjectId.isValid(currentUserId))
+        throw APIError.UnauthorizedError();
 
-      const followingUsers: IFollow[] | null = await Follow.find({
-        follower: new Types.ObjectId(currentUserId),
+      const currentUserObjectId = new Types.ObjectId(currentUserId);
+      const followingUsers: IFollow[] = await Follow.find({
+        follower: currentUserObjectId,
       })
         .select("following")
         .lean();
@@ -85,9 +88,19 @@ class PostsService {
         (f: IFollow): Types.ObjectId => f.following,
       );
 
-      // followingUserIds.push(new Types.ObjectId(currentUserId));
+      // Include current user's posts in their own feed.
+      followingUserIds.push(currentUserObjectId);
 
-      filter.user = { $in: followingUserIds };
+      const uniqueUserIds: Types.ObjectId[] = Array.from(
+        new Map(
+          followingUserIds.map((id: Types.ObjectId): [string, Types.ObjectId] => [
+            id.toString(),
+            id,
+          ]),
+        ).values(),
+      );
+
+      filter.user = { $in: uniqueUserIds };
     }
 
     const [posts, total] = await Promise.all([
