@@ -181,7 +181,7 @@ class AuthService {
     await this._redis.setEx(`reset:mail:${email}`, email, 900);
     await this._mailService.sendForgotPasswordMail(
       email,
-      `${this._env.CLIENT_URL}/api/user/reset-password/${rawToken}`,
+      `${this._env.CLIENT_URL}/reset-password/${rawToken}`,
     );
 
     return commonResponse;
@@ -192,7 +192,8 @@ class AuthService {
     password: string,
     passwordConfirm: string,
   ): Promise<AuthResponse.Message> {
-    const candidateId: string | null = await this._redis.get(`reset:token:${token}`);
+    const hashedToken: string = this.sha256Hash(token);
+    const candidateId: string | null = await this._redis.get(`reset:token:${hashedToken}`);
     if (!candidateId) throw APIError.NotFound("N404", "Invalid or expired reset token.");
 
     if (password !== passwordConfirm) throw APIError.BadRequest("V400", "Passwrods do no match.");
@@ -206,7 +207,7 @@ class AuthService {
 
     user.password = hashedPassword;
     await user.save();
-    await this._redis.del(`reset:token:${token}`);
+    await this._redis.del(`reset:token:${hashedToken}`);
     return {
       message: "Password has been reset successfully.",
     };

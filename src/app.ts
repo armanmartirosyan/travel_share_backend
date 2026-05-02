@@ -51,12 +51,16 @@ class App {
   private configureRoutes(): void {
     this._app.use(express.json());
     this._app.use(cookieParser());
-    this._app.use(
-      cors({
-        origin: this._env.CLIENT_URL,
-        credentials: true,
-      }),
-    );
+    // this._app.use(
+    //   cors({
+    //     origin: this._env.CLIENT_URL,
+    //     credentials: true,
+    //   }),
+    // );
+    this._app.use(cors({
+      origin: true,
+      credentials: true,
+    }));
     this._app.use(this.configureDumper());
     this._app.use("/api", mainRouter);
     this._app.use(express.static(this._env.UPLOAD_PATH));

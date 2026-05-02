@@ -89,7 +89,7 @@ class PostsService {
       );
 
       // Include current user's posts in their own feed.
-      followingUserIds.push(currentUserObjectId);
+      // followingUserIds.push(currentUserObjectId);
 
       const uniqueUserIds: Types.ObjectId[] = Array.from(
         new Map(
