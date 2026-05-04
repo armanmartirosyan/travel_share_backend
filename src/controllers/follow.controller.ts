@@ -3,7 +3,7 @@ import { Logger } from "../common/logger.js";
 import { ResponseGenerator } from "../common/response.generator.js";
 import { APIError } from "../errors/api.error.js";
 import { FollowService } from "../services/follow.service.js";
-import type { FollowParams, FollowResponse } from "../types/index.js";
+import type { FollowParams, FollowQuery, FollowResponse } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
 import type { JwtPayload } from "jsonwebtoken";
 
@@ -53,17 +53,22 @@ class FollowController {
   }
 
   public async getFollowers(
-    req: Request<FollowParams.UserId>,
+    req: Request<FollowParams.UserId, {}, {}, FollowQuery.PaginationParams>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { userId } = req.params;
+      const { page, limit } = req.query;
 
       if (!userId) throw APIError.BadRequest("M400", "User id is required.");
       if (!Types.ObjectId.isValid(userId)) throw APIError.BadRequest("V400", "Not valid user id.");
 
-      const response: FollowResponse.GetFollowers = await this._followService.getFollowers(userId);
+      const response: FollowResponse.GetFollowers = await this._followService.getFollowers(
+        userId,
+        page,
+        limit,
+      );
       this._logger.debug("Followers Retrieved");
       res.status(200).json(ResponseGenerator.success<FollowResponse.GetFollowers>("OK", response));
     } catch (error: unknown) {
@@ -72,17 +77,22 @@ class FollowController {
   }
 
   public async getFollowing(
-    req: Request<FollowParams.UserId>,
+    req: Request<FollowParams.UserId, {}, {}, FollowQuery.PaginationParams>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { userId } = req.params;
+      const { page, limit } = req.query;
 
       if (!userId) throw APIError.BadRequest("M400", "User id is required.");
       if (!Types.ObjectId.isValid(userId)) throw APIError.BadRequest("V400", "Not valid user id.");
 
-      const response: FollowResponse.GetFollowing = await this._followService.getFollowing(userId);
+      const response: FollowResponse.GetFollowing = await this._followService.getFollowing(
+        userId,
+        page,
+        limit,
+      );
       this._logger.debug("Following Retrieved");
       res.status(200).json(ResponseGenerator.success<FollowResponse.GetFollowing>("OK", response));
     } catch (error: unknown) {

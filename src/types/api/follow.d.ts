@@ -33,14 +33,28 @@ export namespace FollowParams {
   };
 }
 
+export namespace FollowQuery {
+  type PaginationParams = {
+    page: string;
+    limit: string;
+  };
+}
+
 export namespace FollowResponse {
+  type PaginationMeta = {
+    totalUsers: number;
+    currentPage: number;
+    totalPages: number;
+    hasNextPage: boolean;
+  };
+
   type GetFollowers = {
     followers: Follower[];
-    total: number;
+    meta: PaginationMeta;
   };
 
   type GetFollowing = {
     following: Following[];
-    total: number;
+    meta: PaginationMeta;
   };
 }

@@ -44,12 +44,29 @@ class FollowService {
     await follow.deleteOne();
   }
 
-  public async getFollowers(userId: string): Promise<FollowResponse.GetFollowers> {
+  public async getFollowers(
+    userId: string,
+    page: string,
+    limit: string,
+  ): Promise<FollowResponse.GetFollowers> {
     if (!Types.ObjectId.isValid(userId)) throw APIError.BadRequest("V400", "Not valid user id.");
+    const pageNum: number = Number(page);
+    const limitNum: number = Number(limit);
+
+    if (pageNum < 1 || limitNum < 1)
+      throw APIError.BadRequest("V400", "Page and limit must be greater than 0");
+
+    const skip: number = (pageNum - 1) * limitNum;
 
     const followersRaw: IFollow[] = await Follow.find({ following: userId })
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
       .populate("follower", "_id username name surname profilePicture");
+
+    const totalCount: number = await Follow.countDocuments({ following: userId });
+    const totalPages: number = Math.ceil(totalCount / limitNum);
+    const hasNextPage: boolean = pageNum * limitNum < totalCount;
 
     const followers: Follower[] = followersRaw.map((follow: IFollow): Follower => {
       const followerUser: IUser = follow.follower as unknown as IUser;
@@ -66,16 +83,38 @@ class FollowService {
 
     return {
       followers,
-      total: followers.length,
+      meta: {
+        totalUsers: totalCount,
+        currentPage: pageNum,
+        totalPages,
+        hasNextPage,
+      },
     };
   }
 
-  public async getFollowing(userId: string): Promise<FollowResponse.GetFollowing> {
+  public async getFollowing(
+    userId: string,
+    page: string,
+    limit: string,
+  ): Promise<FollowResponse.GetFollowing> {
     if (!Types.ObjectId.isValid(userId)) throw APIError.BadRequest("V400", "Not valid user id.");
+    const pageNum: number = Number(page);
+    const limitNum: number = Number(limit);
+
+    if (pageNum < 1 || limitNum < 1)
+      throw APIError.BadRequest("V400", "Page and limit must be greater than 0");
+
+    const skip: number = (pageNum - 1) * limitNum;
 
     const followingRaw: IFollow[] = await Follow.find({ follower: userId })
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
       .populate("following", "_id username name surname profilePicture");
+
+    const totalCount: number = await Follow.countDocuments({ follower: userId });
+    const totalPages: number = Math.ceil(totalCount / limitNum);
+    const hasNextPage: boolean = pageNum * limitNum < totalCount;
 
     const following: Following[] = followingRaw.map((follow: IFollow): Following => {
       const followedUser: IUser = follow.following as unknown as IUser;
@@ -92,7 +131,12 @@ class FollowService {
 
     return {
       following,
-      total: following.length,
+      meta: {
+        totalUsers: totalCount,
+        currentPage: pageNum,
+        totalPages,
+        hasNextPage,
+      },
     };
   }
 }

@@ -42,6 +42,7 @@ export namespace AuthQuery {
     username: string;
     page: string;
     limit: string;
+    self?: "following" | "follower";
   };
 }
 

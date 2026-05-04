@@ -295,6 +295,8 @@ class AuthService {
     username: string,
     page: string,
     limit: string,
+    self?: "following" | "follower",
+    currentUserId?: string,
   ): Promise<AuthResponse.SearchUsers> {
     const pageNum: number = Number(page);
     const limitNum: number = Number(limit);
@@ -305,10 +307,24 @@ class AuthService {
     const skip: number = (pageNum - 1) * limitNum;
 
     const searchRegex = new RegExp(username, "i");
+    const userFilter: Record<string, unknown> = { username: searchRegex };
+
+    if (self) {
+      if (!currentUserId) throw APIError.UnauthorizedError();
+
+      const relationFilter =
+        self === "following" ? { follower: currentUserId } : { following: currentUserId };
+      const relationField = self === "following" ? "following" : "follower";
+      const relationIds: string[] = (await Follow.distinct(relationField, relationFilter)).map(
+        (id: Types.ObjectId | string) => id.toString(),
+      );
+
+      userFilter._id = { $in: relationIds };
+    }
 
     const [users, totalCount] = await Promise.all([
-      User.find({ username: searchRegex }).skip(skip).limit(limitNum).lean(),
-      User.countDocuments({ username: searchRegex }),
+      User.find(userFilter).skip(skip).limit(limitNum).lean(),
+      User.countDocuments(userFilter),
     ]);
 
     const totalPages: number = Math.ceil(totalCount / limitNum);

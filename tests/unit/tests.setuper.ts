@@ -188,6 +188,7 @@ class TestSetuper {
     jest.spyOn(Follow, "findOneAndUpdate").mockResolvedValue(mockFollow);
     jest.spyOn(Follow, "findOneAndDelete").mockResolvedValue(mockFollow);
     jest.spyOn(Follow, "countDocuments").mockResolvedValue(Math.floor(100 * Math.random()));
+    jest.spyOn(Follow, "distinct").mockResolvedValue([new mongoose.Types.ObjectId().toString()]);
   }
 
   public mockEnv(): ValidatedEnv {

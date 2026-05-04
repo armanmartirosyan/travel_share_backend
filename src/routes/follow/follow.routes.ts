@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { FollowController } from "../../controllers/follow.controller.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
+import { Validator } from "../../middlewares/validator.midlleware.js";
 
 const followRouter: Router = Router();
 const followController: FollowController = new FollowController();
@@ -15,7 +16,15 @@ followRouter.delete(
   AuthMiddleware.authHandler(),
   followController.deleteFollow.bind(followController),
 );
-followRouter.get("/followers/:userId", followController.getFollowers.bind(followController));
-followRouter.get("/following/:userId", followController.getFollowing.bind(followController));
+followRouter.get(
+  "/followers/:userId",
+  Validator.query(["page", "limit"]),
+  followController.getFollowers.bind(followController),
+);
+followRouter.get(
+  "/following/:userId",
+  Validator.query(["page", "limit"]),
+  followController.getFollowing.bind(followController),
+);
 
 export { followRouter };

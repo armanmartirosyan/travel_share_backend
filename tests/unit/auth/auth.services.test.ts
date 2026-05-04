@@ -11,7 +11,7 @@ import {
   AUTH_UPDATE_EXCEPTION_CASES,
   AUTH_SEARCH_USERS_EXCEPTION_CASES,
 } from "./auth.service.cases";
-import { User } from "../../../src/models/index.model";
+import { Follow, User } from "../../../src/models/index.model";
 import { AuthService } from "../../../src/services/auth.service";
 import { MailService } from "../../../src/services/mail.service";
 import { TokenService } from "../../../src/services/token.service";
@@ -419,6 +419,36 @@ describe("AuthService", (): void => {
       expect(res.meta.currentPage).toBe(1);
       expect(res.meta.totalPages).toBe(Math.ceil(res.meta.totalUsers / 10));
       expect(res.meta.hasNextPage).toBe(false);
+    });
+
+    it("searches current user's followings when scoped to following", async (): Promise<void> => {
+      const authService = new AuthService();
+      const currentUserId = "507f1f77bcf86cd799439011";
+
+      await authService.searchUsers("arm", "1", "10", "following", currentUserId);
+
+      expect(Follow.distinct).toHaveBeenCalledWith("following", { follower: currentUserId });
+      expect(User.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: expect.any(RegExp),
+          _id: expect.objectContaining({ $in: expect.any(Array) }),
+        }),
+      );
+    });
+
+    it("searches current user's followers when scoped to follower", async (): Promise<void> => {
+      const authService = new AuthService();
+      const currentUserId = "507f1f77bcf86cd799439011";
+
+      await authService.searchUsers("arm", "1", "10", "follower", currentUserId);
+
+      expect(Follow.distinct).toHaveBeenCalledWith("follower", { following: currentUserId });
+      expect(User.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: expect.any(RegExp),
+          _id: expect.objectContaining({ $in: expect.any(Array) }),
+        }),
+      );
     });
 
     it("returns empty array when no users match", async (): Promise<void> => {

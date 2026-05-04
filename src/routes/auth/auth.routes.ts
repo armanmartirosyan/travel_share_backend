@@ -44,6 +44,7 @@ authRouter.patch(
 );
 authRouter.get(
   "/search",
+  AuthMiddleware.authHandler(false),
   Validator.query(["username", "page", "limit"]),
   authController.searchUsers.bind(authController),
 );

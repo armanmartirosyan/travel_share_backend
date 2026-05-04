@@ -200,11 +200,14 @@ class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { username, page, limit } = req.query;
+      const { username, page, limit, self } = req.query;
+      const currentUserId: string | undefined = req.payload?.sub;
       const response: AuthResponse.SearchUsers = await this._authService.searchUsers(
         username,
         page,
         limit,
+        self,
+        currentUserId,
       );
       res.status(200).json(ResponseGenerator.success<AuthResponse.SearchUsers>("OK", response));
     } catch (error: unknown) {
