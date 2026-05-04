@@ -7,6 +7,7 @@ import { MailService } from "./mail.service.js";
 import { TokenService } from "./token.service.js";
 import { Env } from "../config/env.config.js";
 import { RedisService } from "../config/redis.config.js";
+import { UserDTO } from "../dto/user.dto.js";
 import { APIError } from "../errors/api.error.js";
 import { User, ActivationToken, Follow } from "../models/index.model.js";
 import type { IUser, IActivationToken, ITokens } from "../models/index.model.js";
@@ -286,6 +287,40 @@ class AuthService {
       userInfo: {
         followers,
         following,
+      },
+    };
+  }
+
+  public async searchUsers(
+    username: string,
+    page: string,
+    limit: string,
+  ): Promise<AuthResponse.SearchUsers> {
+    const pageNum: number = Number(page);
+    const limitNum: number = Number(limit);
+
+    if (pageNum < 1 || limitNum < 1)
+      throw APIError.BadRequest("V400", "Page and limit must be greater than 0");
+
+    const skip: number = (pageNum - 1) * limitNum;
+
+    const searchRegex = new RegExp(username, "i");
+
+    const [users, totalCount] = await Promise.all([
+      User.find({ username: searchRegex }).skip(skip).limit(limitNum).lean(),
+      User.countDocuments({ username: searchRegex }),
+    ]);
+
+    const totalPages: number = Math.ceil(totalCount / limitNum);
+    const hasNextPage: boolean = pageNum * limitNum < totalCount;
+
+    return {
+      users: users.map((user) => new UserDTO(user as IUser)),
+      meta: {
+        totalUsers: totalCount,
+        currentPage: pageNum,
+        totalPages,
+        hasNextPage,
       },
     };
   }

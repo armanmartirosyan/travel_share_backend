@@ -9,6 +9,7 @@ import type {
   AuthResponse,
   AuthRequestBody,
   AuthParams,
+  AuthQuery,
   ValidatedEnv,
 } from "../types/index.js";
 import type { NextFunction, Request, Response } from "express";
@@ -188,6 +189,24 @@ class AuthController {
       const response: AuthResponse.User = await this._authService.getUser(id);
       const userDto: UserDTO = new UserDTO(response.user, response.userInfo);
       res.status(200).json(ResponseGenerator.success<UserDTO>("OK", userDto));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  public async searchUsers(
+    req: Request<{}, {}, {}, AuthQuery.SearchUsers>,
+    res: Response<ApiResponse<AuthResponse.SearchUsers>>,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { username, page, limit } = req.query;
+      const response: AuthResponse.SearchUsers = await this._authService.searchUsers(
+        username,
+        page,
+        limit,
+      );
+      res.status(200).json(ResponseGenerator.success<AuthResponse.SearchUsers>("OK", response));
     } catch (error: unknown) {
       next(error);
     }

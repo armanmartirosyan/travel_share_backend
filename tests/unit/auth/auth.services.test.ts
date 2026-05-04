@@ -9,6 +9,7 @@ import {
   AUTH_RESET_PASSWORD_EXCEPTION_CASES,
   AUTH_UPLOAD_PICTURE_EXCEPTION_CASES,
   AUTH_UPDATE_EXCEPTION_CASES,
+  AUTH_SEARCH_USERS_EXCEPTION_CASES,
 } from "./auth.service.cases";
 import { User } from "../../../src/models/index.model";
 import { AuthService } from "../../../src/services/auth.service";
@@ -386,6 +387,54 @@ describe("AuthService", (): void => {
           const authService = new AuthService();
           if (setup) setup();
           await authService.updateUser(body.userId, body);
+          fail("Should throw an error");
+        } catch (e: any) {
+          expect(e).toBeInstanceOf(instance);
+          expect(e.message).toBe(message);
+          expect(e.errors).toBe(errors);
+        }
+      },
+    );
+  });
+
+  describe("searchUsers", (): void => {
+    it("searches users successfully with partial match", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthResponse.SearchUsers = await authService.searchUsers("arm", "1", "10");
+
+      expect(res).toHaveProperty("users");
+      expect(res).toHaveProperty("meta");
+      expect(res.meta).toHaveProperty("totalUsers");
+      expect(res.meta).toHaveProperty("currentPage", 1);
+      expect(res.meta).toHaveProperty("totalPages");
+      expect(res.meta).toHaveProperty("hasNextPage");
+    });
+
+    it("returns pagination metadata correctly", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthResponse.SearchUsers = await authService.searchUsers("test", "1", "10");
+
+      expect(res.meta.currentPage).toBe(1);
+      expect(res.meta.totalPages).toBe(Math.ceil(res.meta.totalUsers / 10));
+      expect(res.meta.hasNextPage).toBe(false);
+    });
+
+    it("returns empty array when no users match", async (): Promise<void> => {
+      const authService = new AuthService();
+
+      const res: AuthResponse.SearchUsers = await authService.searchUsers("nonexistent", "1", "10");
+
+      expect(Array.isArray(res.users)).toBe(true);
+    });
+
+    test.each(AUTH_SEARCH_USERS_EXCEPTION_CASES)(
+      "$name",
+      async ({ params, message, instance, errors }) => {
+        try {
+          const authService = new AuthService();
+          await authService.searchUsers(params!.username, params!.page, params!.limit);
           fail("Should throw an error");
         } catch (e: any) {
           expect(e).toBeInstanceOf(instance);

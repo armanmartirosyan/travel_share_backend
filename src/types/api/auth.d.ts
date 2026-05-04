@@ -37,6 +37,14 @@ export namespace AuthParams {
   type UserID = { id: string };
 }
 
+export namespace AuthQuery {
+  type SearchUsers = {
+    username: string;
+    page: string;
+    limit: string;
+  };
+}
+
 export namespace AuthResponse {
   type Session = {
     user: UserDTO;
@@ -63,5 +71,15 @@ export namespace AuthResponse {
 
   type UploadProfilePicture = {
     filename: string;
+  };
+
+  type SearchUsers = {
+    users: UserDTO[];
+    meta: {
+      totalUsers: number;
+      currentPage: number;
+      totalPages: number;
+      hasNextPage: boolean;
+    };
   };
 }

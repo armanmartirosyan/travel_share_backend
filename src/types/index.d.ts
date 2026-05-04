@@ -1,5 +1,5 @@
 import type { ApiResponse } from "./api/api.js";
-import type { AuthResponse, AuthRequestBody, AuthParams } from "./api/auth.js";
+import type { AuthResponse, AuthRequestBody, AuthParams, AuthQuery } from "./api/auth.js";
 import type { CommentRequestBody, CommentQueryParams, CommentParams } from "./api/comment.js";
 import type { PostRequestBody, PostsParams, PostsTypes, PostsResponse } from "./api/posts.js";
 import type { TokenPair } from "./api/token.js";
@@ -12,6 +12,7 @@ export type {
   ApiResponse,
   AuthResponse,
   AuthParams,
+  AuthQuery,
   ColorType,
   CommentRequestBody,
   CommentQueryParams,

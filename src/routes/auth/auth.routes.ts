@@ -42,6 +42,11 @@ authRouter.patch(
   AuthMiddleware.authHandler(),
   authController.updateUser.bind(authController),
 );
+authRouter.get(
+  "/search",
+  Validator.query(["username", "page", "limit"]),
+  authController.searchUsers.bind(authController),
+);
 authRouter.get("/:id", authController.getUser.bind(authController));
 
 authRouter.use("/profile", express.static(multer.ProfileUploadPath));

@@ -302,6 +302,31 @@ const AUTH_UPDATE_EXCEPTION_CASES: ExceptionCases<
   },
 ];
 
+const AUTH_SEARCH_USERS_EXCEPTION_CASES: ExceptionCases<
+  null,
+  typeof APIError,
+  { username: string; page: string; limit: string }
+> = [
+  {
+    name: "throws when page is less than 1",
+    body: null,
+    params: { username: "arm", page: "0", limit: "10" },
+    message: "Bad Request",
+    setup: null,
+    instance: APIError,
+    errors: "Page and limit must be greater than 0",
+  },
+  {
+    name: "throws when limit is less than 1",
+    body: null,
+    params: { username: "arm", page: "1", limit: "0" },
+    message: "Bad Request",
+    setup: null,
+    instance: APIError,
+    errors: "Page and limit must be greater than 0",
+  },
+];
+
 export {
   testSetuper,
   AUTH_REG_EXCEPTION_CASES,
@@ -312,4 +337,5 @@ export {
   AUTH_RESET_PASSWORD_EXCEPTION_CASES,
   AUTH_UPLOAD_PICTURE_EXCEPTION_CASES,
   AUTH_UPDATE_EXCEPTION_CASES,
+  AUTH_SEARCH_USERS_EXCEPTION_CASES,
 };

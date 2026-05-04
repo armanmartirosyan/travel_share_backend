@@ -148,6 +148,15 @@ class TestSetuper {
       if (id === "noUser" || id === "tokenNoUser") return Promise.resolve(null);
       return Promise.resolve(mockUser);
     });
+
+    // mock find with chainable methods
+    const mockLean = jest.fn().mockResolvedValue([mockUser]);
+    const mockLimit = jest.fn().mockReturnValue({ lean: mockLean });
+    const mockSkip = jest.fn().mockReturnValue({ limit: mockLimit });
+    const mockFind = jest.fn().mockReturnValue({ skip: mockSkip });
+
+    User.find = mockFind;
+    User.countDocuments = jest.fn().mockResolvedValue(1);
   }
 
   public setupTokenModel(): void {
