@@ -57,10 +57,12 @@ class App {
     //     credentials: true,
     //   }),
     // );
-    this._app.use(cors({
-      origin: true,
-      credentials: true,
-    }));
+    this._app.use(
+      cors({
+        origin: true,
+        credentials: true,
+      }),
+    );
     this._app.use(this.configureDumper());
     this._app.use("/api", mainRouter);
     this._app.use(express.static(this._env.UPLOAD_PATH));

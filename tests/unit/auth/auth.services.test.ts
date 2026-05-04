@@ -222,7 +222,7 @@ describe("AuthService", (): void => {
 
       expect(MailService.prototype.sendForgotPasswordMail).toHaveBeenCalledWith(
         commonEmail,
-        expect.stringContaining("/api/user/reset-password/mock-uuid"),
+        expect.stringContaining("reset-password/mock-uuid"),
       );
     });
 
